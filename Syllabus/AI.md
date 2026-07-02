@@ -1,7 +1,88 @@
 # 🧠 AI Engineer Syllabus 2026
-### Frontend → AI Engineer | 10 Weeks | 1hr/day | 5 days/week
+### Frontend → AI Engineer | 12 Weeks | 1hr/day | 5 days/week
+> Weeks 1–10 = core AI Engineer skillset. Weeks 11–12 = real-world gaps (multimodal, computer use, ecosystem breadth, security) — don't skip these, they're what separates a portfolio from a hireable one.
 
 > Every session ends with a **showcase task** — something you can push to GitHub, post on LinkedIn, or demo to a recruiter.
+
+---
+
+## 🔍 Jargon Decoder — "Trending term" → Where it's actually taught here
+
+> Philosophy of this syllabus: **build the primitive by hand before you reach for the framework that hides it.**
+> The buzzwords below aren't a separate curriculum — they're labels sitting on top of what you're already scheduled to build. By the time you're done, you'll understand these tools from the inside instead of just knowing their API.
+
+| Trending Term | What it actually means | Where it's covered here |
+|---|---|---|
+| **GenAI (Generative AI)** | Umbrella term for any AI that generates content (text, code, images) rather than just classifying data | The entire syllabus — this is the whole field |
+| **Agentic AI** | LLM systems that plan, use tools, take multi-step actions, and pursue a goal with some autonomy (not just single-turn chat) | **Phase 3, Weeks 5–7** — Agent Architecture, Memory, Planning, Multi-Agent Orchestration |
+| **LangChain** | A framework that wraps common LLM patterns (prompt templates, chains, memory, tool use) into pre-built abstractions | You build its internals by hand: `PromptBuilder` (Wk2 D1), `AgentMemory` (Wk5 D2), `ToolRegistry` (Wk3 D1), `Orchestrator` (Wk6 D2) |
+| **LangGraph** | LangChain's graph-based orchestration layer — nodes, edges, conditional routing, cycles for agent workflows | **Week 7, Day 4** — explicit build + comparison task |
+| **LangSmith** | Tracing, evaluation, and regression-testing tool for LLM apps in production | **Week 2 Day 3** (prompt testing), **Week 8** (Eval Framework, Regression Runner, Observability) |
+| **RAG (Retrieval-Augmented Generation)** | Making an LLM answer using YOUR documents instead of only its training data | **Week 4**, entirely |
+| **MCP (Model Context Protocol)** | The emerging standard for connecting LLMs to external tools/data sources | **Week 3, Day 4** — you build your own MCP server |
+| **Fine-tuning** | Retraining a model's weights on your own data (vs. prompting or RAG) | **Week 9, Day 3** — decision framework: when to prompt vs RAG vs fine-tune |
+| **AI Orchestration / Multi-Agent Systems** | Multiple specialized agents coordinating on a task via a supervisor/orchestrator | **Week 6**, entirely |
+| **Guardrails** | Input/output safety filters — prompt injection detection, PII filtering, content policy | **Week 8, Day 3** |
+| **Observability (for AI)** | Logging traces, tokens, latency, and quality signals for production AI systems | **Week 8, Day 4** |
+| **Multimodal AI** | A model that can process/generate more than text — images, audio, video | **Week 11**, entirely |
+| **Computer Use** | An agent pattern where the model sees a screenshot and outputs clicks/keystrokes to control a real computer/browser | **Week 11, Day 4** |
+| **CrewAI / OpenAI Agents SDK / Vercel AI SDK** | Alternative agent-building frameworks to LangChain/LangGraph, each with different philosophies | **Week 12, Day 3** |
+| **Ollama / Hugging Face / llama.cpp** | Tools for running open-source LLMs locally instead of calling a hosted API | **Week 12, Day 2** |
+| **SSRF (Server-Side Request Forgery)** | A security flaw where a tool call can be tricked into hitting an internal/unintended URL | **Week 12, Day 5** |
+| **OWASP Top 10 for LLMs** | A standard checklist of the most common security risks specific to LLM applications | **Week 12, Day 5** |
+
+**Rule of thumb:** if you hear a new trending term mid-syllabus and can't find it above, it's almost certainly a rebrand or a specific product implementation of a concept you're already scheduled to learn — ask me and I'll map it in.
+
+### Embedded jargon (smaller terms buried inside daily tasks)
+
+**Core LLM mechanics**
+| Term | Meaning | Where |
+|---|---|---|
+| Token / tokenizer / tiktoken | The chunks (sub-words) an LLM actually reads/counts; tiktoken is OpenAI's tokenizer library | Wk1 D1, D4 |
+| Context window | Max tokens a model can "see" at once (input + output) | Wk1 D1, D4 |
+| Temperature / Top-P | Sampling knobs controlling randomness of output | Wk1 D3 |
+| Sliding window | Technique to keep only the most recent N messages when trimming context | Wk1 D4, D5 |
+| Extended thinking / reasoning models | Models (o3, Claude with extended thinking) that "think" step-by-step before answering — slower, costlier, more accurate on hard problems | Wk2 D4 |
+
+**Prompting techniques**
+| Term | Meaning | Where |
+|---|---|---|
+| Zero-shot / Few-shot | Giving the model no examples vs. a few examples in the prompt | Wk2 D1 |
+| Chain-of-Thought (CoT) | Prompting the model to reason step-by-step before giving a final answer | Wk2 D1 |
+| JSON mode / structured output | Forcing the model's output into a strict schema (e.g. via Zod) | Wk2 D2 |
+| Zod | A TypeScript schema-validation library, commonly used to enforce LLM JSON output shape | Wk2 D2 |
+
+**Tool use & agents**
+| Term | Meaning | Where |
+|---|---|---|
+| Function calling / Tool use | The model outputs a structured "call this function" intent, your code executes it, result goes back to the model | Wk3 D1 |
+| ReAct pattern | "Reason + Act" loop — model thinks, takes an action (tool call), observes result, repeats | Wk3 D3 |
+| Task decomposition / Tree-of-Thoughts | Breaking one big goal into ordered subtasks, sometimes exploring multiple reasoning branches | Wk5 D3 |
+| Human-in-the-loop | Pausing an agent to get human approval before risky/irreversible actions | Wk5 D4 |
+| Orchestrator-worker / Supervisor pattern | One "manager" agent routes tasks to specialist "worker" agents | Wk6 D1–D2 |
+| AutoGen | Microsoft's multi-agent framework — a named alternative/competitor to LangGraph | Wk6 D1 (comparison only, not built) |
+
+**Retrieval / RAG**
+| Term | Meaning | Where |
+|---|---|---|
+| Embeddings | Numeric vector representation of text used for semantic similarity search | Wk4 D1 |
+| Vector database (Chroma/Qdrant/Pinecone) | A database optimized for storing/searching embeddings | Wk4 D1 |
+| Chunking | Splitting documents into smaller pieces before embedding | Wk4 D2 |
+| Hybrid search / BM25 | Combining keyword search (BM25 = a classic keyword-ranking algorithm) with semantic search | Wk4 D3 |
+| Re-ranking | A second pass that reorders retrieved chunks by relevance before sending to the model | Wk4 D3 |
+| HyDE | "Hypothetical Document Embeddings" — generating a fake ideal answer first, then searching using that, to improve retrieval | Wk4 D3 |
+| RAGAS / faithfulness / groundedness | A framework + metrics for scoring whether a RAG answer is actually supported by retrieved context | Wk4 D4 |
+
+**Reliability & ops**
+| Term | Meaning | Where |
+|---|---|---|
+| LLM-as-judge | Using one LLM to grade another LLM's output against a rubric | Wk8 D1 |
+| Golden dataset | A fixed, trusted set of test cases used to catch regressions | Wk8 D2 |
+| Prompt injection | An attack where malicious text tricks the model into ignoring its instructions | Wk8 D3 |
+| Circuit breaker / exponential backoff | Reliability patterns: stop calling a failing service temporarily; retry with increasing delays | Wk7 D2 |
+| Model tiering / semantic caching | Using cheaper models for easy tasks; caching answers to semantically similar repeated queries | Wk7 D3 |
+| Traces / spans | Observability terms — a "trace" is one full request's journey, a "span" is one step within it | Wk8 D4 |
+| SSE / WebSockets / Streaming | Techniques for sending model output to the user token-by-token instead of all at once | Wk9 D2 |
 
 ---
 
@@ -637,6 +718,126 @@
 
 ---
 
+## 📍 PHASE 6 — Beyond the Core: Real-World Gaps (Weeks 11–12)
+> **Goal:** Cover what the core 10 weeks intentionally left out but real 2026 AI Engineer roles expect. Treat this as mandatory, not optional — recruiters will test for these.
+
+---
+
+### WEEK 11 — Multimodal AI & Computer Use Agents
+
+**Week Goal:** Move beyond text-only. Most real GenAI products in 2026 touch images, voice, or the screen itself.
+
+---
+
+#### Day 1 — Vision Input (Image Understanding)
+- **Theory:** How multimodal models process images alongside text — vision encoders feeding into the same transformer. Use cases: document scanning, UI review, visual Q&A
+- **Read:** Anthropic vision docs, `"multimodal LLM architecture explained"`
+- **Experiment:** Feed the same image with 3 different questions. Test accuracy on charts, handwriting, and screenshots
+- **🏗️ Showcase Task:** Build an `ImageQA` utility
+  - Accepts image + question, returns grounded answer
+  - Test on: a chart, a screenshot, a handwritten note
+  - Add to toolkit repo
+
+---
+
+#### Day 2 — Audio: Speech-to-Text & Text-to-Speech
+- **Theory:** STT/TTS pipeline basics — where transcription ends and LLM reasoning begins. Latency implications for voice UX
+- **Read:** `"building voice AI applications"`, Whisper API docs, ElevenLabs/TTS provider docs
+- **Experiment:** Transcribe a voice note, pass to your LLM wrapper, speak the response back. Measure round-trip latency
+- **🏗️ Showcase Task:** Build a `VoiceInterface` wrapper
+  - `speechToText(audio)` → `callLLM()` → `textToSpeech(response)`
+  - Add to toolkit repo
+
+---
+
+#### Day 3 — Image Generation
+- **Theory:** How diffusion-based image generation differs from LLM text generation. Prompting differences, cost/latency profile
+- **Read:** `"image generation API comparison 2026"`
+- **Experiment:** Same prompt across 2 image generation APIs. Compare quality, cost, speed
+- **🏗️ Showcase Task:** Add an `ImageGen` tool to your `ToolRegistry` from Week 3
+  - Lets an agent generate an image as part of a larger task
+  - Add to toolkit repo
+
+---
+
+#### Day 4 — Computer Use & Browser Agents
+- **Theory:** How "computer use" agents work — screenshot → model reasons about UI → outputs click/type coordinates → loop. Where this differs from API tool calling. Browser automation (Playwright) as an alternative
+- **Read:** Anthropic Computer Use docs, `"browser automation AI agents"`, Playwright docs
+- **Experiment:** Give an agent a simple browser task (e.g. "search for X and extract the top result"). Observe failure modes
+- **🏗️ Showcase Task:** Build a minimal `BrowserAgent`
+  - Uses Playwright + your LLM to complete a simple multi-step web task
+  - Full action log (what it clicked/typed and why)
+  - **This is one of the most in-demand agent skills right now** — strong portfolio differentiator
+
+---
+
+#### Day 5 — Week 11 Integration Project
+- **🏗️ Showcase Task:** **"Multimodal Assistant"**
+  - Accepts text, voice, or image input
+  - Can generate an image or speak a response back
+  - Can optionally hand off a task to your `BrowserAgent`
+  - **This demonstrates you're not a text-only AI engineer** — most candidates are
+
+---
+
+### WEEK 12 — Ecosystem Breadth & Production Hardening
+
+**Week Goal:** Round out the parts of the ecosystem and production concerns the core weeks didn't have room for
+
+---
+
+#### Day 1 — Python Exposure
+- **Theory:** Most of the AI ecosystem (original LangChain, Hugging Face, research code, data tooling) is Python-first. You don't need to switch stacks — you need to *read* Python comfortably
+- **Read:** Official LangChain Python quickstart, `"Python for JS developers"`
+- **Experiment:** Port one utility from your toolkit (e.g. `PromptBuilder`) to Python. Compare syntax and ecosystem conventions
+- **🏗️ Showcase Task:** Add a `/python-port` folder to your toolkit repo
+  - One ported utility with a README explaining the JS→Python mapping
+  - Goal isn't fluency — it's removing the "I can't read this doc" barrier
+
+---
+
+#### Day 2 — Open-Source & Local Models
+- **Theory:** When to self-host (cost, privacy, latency, offline) vs call a hosted API. Overview of Ollama, Hugging Face, llama.cpp
+- **Read:** Ollama docs, `"self-hosted vs API LLM cost comparison"`
+- **Experiment:** Run a small open model locally via Ollama. Compare latency/quality/cost against your API-based `callLLM()`
+- **🏗️ Showcase Task:** Add a `LocalModelAdapter` to your `ModelRouter` (Week 2)
+  - Routes simple/sensitive tasks to a local model, complex ones to the API
+  - Document the tradeoffs you observed
+
+---
+
+#### Day 3 — Other Agent Frameworks
+- **Theory:** How CrewAI, OpenAI's Agents SDK, and Vercel's AI SDK differ from LangGraph/AutoGen in philosophy and API design. Vercel AI SDK matters most for you given your frontend background
+- **Read:** CrewAI docs, Vercel AI SDK docs, OpenAI Agents SDK docs
+- **Experiment:** Rebuild one small agent task (e.g. your Week 5 `TaskPlanner`) using the Vercel AI SDK
+- **🏗️ Showcase Task:** Write a short comparison doc
+  - Your custom implementation vs LangGraph (Wk7) vs Vercel AI SDK
+  - When you'd reach for each — **good interview talking point**
+
+---
+
+#### Day 4 — Rate Limiting & Concurrency at Scale
+- **Theory:** What happens when 1,000 users hit your AI backend at once — queuing, per-user rate limits, retry storms, backpressure
+- **Read:** `"rate limiting strategies for LLM APIs"`, `"handling concurrent requests to LLM backends"`
+- **Experiment:** Load-test your Document Intelligence App (Wk4) with simulated concurrent users. Find where it breaks
+- **🏗️ Showcase Task:** Build a `RequestQueue` layer
+  - Per-user rate limiting
+  - Queues excess requests instead of dropping them
+  - Add to toolkit repo
+
+---
+
+#### Day 5 — AI-Specific Security & Final Hardening
+- **Theory:** Security risks beyond prompt injection — client-side API key leaks, SSRF via tool calls (a tool fetching an internal URL), secrets management, least-privilege tool design
+- **Read:** `"LLM application security checklist"`, OWASP Top 10 for LLM Applications
+- **Experiment:** Audit your own `ToolRegistry` (Week 3) for SSRF risk — can a malicious prompt make `fetchURL` hit an internal IP?
+- **🏗️ Showcase Task:** **"Security & Hardening Audit"**
+  - Full security pass on your Capstone project
+  - Document: secrets handling, tool sandboxing, SSRF mitigations, rate limits
+  - Add this report to your Capstone repo — **this is what separates senior candidates**
+
+---
+
 ## 🗂️ Portfolio by End of Program
 
 | # | Project | Skills Demonstrated |
@@ -650,9 +851,11 @@
 | 7 | Production-Ready Audit | Evals, guardrails, observability |
 | 8 | AI System Design Doc | Architecture thinking, senior-level design |
 | 9 | Capstone Project | Everything — end-to-end production AI system |
+| 10 | Multimodal Assistant | Vision, voice, image generation, browser agents |
+| 11 | Security & Hardening Audit | AI-specific security, concurrency, production readiness |
 
 **Shared toolkit repo (`ai-engineer-toolkit`):**
-callLLM · PersonaEngine · ParameterPreset · ContextManager · PromptBuilder · StructuredOutputParser · PromptTestRunner · ModelRouter · ToolRegistry · ReActLoop · RAGPipeline · AgentMemory · TaskPlanner · Orchestrator · GuardrailLayer · EvalFramework
+callLLM · PersonaEngine · ParameterPreset · ContextManager · PromptBuilder · StructuredOutputParser · PromptTestRunner · ModelRouter · ToolRegistry · ReActLoop · RAGPipeline · AgentMemory · TaskPlanner · Orchestrator · GuardrailLayer · EvalFramework · ImageQA · VoiceInterface · ImageGen · BrowserAgent · LocalModelAdapter · RequestQueue
 
 ---
 
@@ -662,3 +865,4 @@ callLLM · PersonaEngine · ParameterPreset · ContextManager · PromptBuilder �
 3. README every project — explain the WHY not just the WHAT
 4. If you skip a day, don't double up — just continue
 5. Post one thing publicly per week minimum (LinkedIn, X, GitHub)
+6. Don't stop at Week 10 — Weeks 11–12 close real gaps (multimodal, computer use, security) that recruiters specifically screen for in 2026
