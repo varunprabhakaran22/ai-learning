@@ -1,6 +1,53 @@
 // Day 1 concepts in one small script: a ToolRegistry that registers tools
 // with name/description/input schema, and a runner that handles the full
 // tool_use -> execute -> tool_result -> continue loop.
+//
+// INDEPENDENT tools (contrast with Day 3's DEPENDENT chain example):
+// getCurrentDate and calculate don't need each other's output, so the
+// model can request BOTH in the SAME response — the loop may finish in
+// just ONE iteration even when 2 tools are used. Trace for the 3rd test
+// call below, "What's today's date, and what's 847293 * 293847?":
+//
+//   User query (needs 2 tools, but neither depends on the other)
+//        │
+//        ▼
+//  ┌────────────────────────────┐
+//  │ API call #1: msg + tools    │
+//  └─────────────┬────────────────┘
+//                ▼
+//         ┌─────────────┐
+//         │    Model     │  Reason: "I need BOTH the date and a
+//         │              │  calculation — neither needs the other's
+//         │              │  result, so I can request both AT ONCE"
+//         └──────┬───────┘
+//                ▼
+//   response.content = [
+//     { type:"tool_use", name:"getCurrentDate", input:{} },
+//     { type:"tool_use", name:"calculate", input:{expression:"847293 * 293847"} }
+//   ]                     ← TWO tool_use blocks, ONE response, ONE iteration
+//                │
+//                ▼  ── iteration 1 (for-loop runs twice, same iteration) ──
+//    execute getCurrentDate() → "2026-07-06"
+//    execute calculate(...)   → "249027635571"
+//                │
+//                ▼
+//  ┌────────────────────────────┐
+//  │ API call #2: history + BOTH │
+//  │   tool_results in one msg   │
+//  └─────────────┬────────────────┘
+//                ▼
+//         ┌─────────────┐
+//         │    Model     │  Observe: has both results already
+//         │              │  Reason: "enough info — final answer"
+//         └──────┬───────┘
+//                ▼
+//   stop_reason: "end_turn" → loop exits after just 1 iteration
+//
+// Compare with Week 3 Day 3/example.js: there, getTransactions CANNOT be
+// requested until getUserId's real result comes back — that forces at
+// least 2 iterations, because the 2nd tool's input doesn't exist yet
+// when the model sees the question. Here, both tools' inputs are known
+// immediately from the user's own sentence, so no such forcing occurs.
 
 const Anthropic = require("@anthropic-ai/sdk");
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

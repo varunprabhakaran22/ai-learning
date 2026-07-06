@@ -1,0 +1,26 @@
+# Day 4 Recap — MCP (Model Context Protocol)
+
+## Key facts
+- MCP doesn't change *how* tool-calling works — the model still only ever outputs `{name, input}` and waits for a `tool_result`. Same loop as Day 1. What MCP changes is *where the tool's real code lives* and *who executes it*.
+- Without MCP: N apps x M tools = N×M custom integrations (every app re-wires every tool it wants). With MCP: N apps + M servers = N+M integrations (a server is built once, any MCP client can plug into it).
+- Two roles: **server** = owns the real logic, exposes tools over the protocol. **client** = lives inside the AI app, discovers tools, relays the model's requests to the server, feeds results back. My showcase code plays both roles at once; in real usage you usually only write one side and consume someone else's other side (e.g. use Anthropic's filesystem server, only write your own client).
+- Tools aren't hand-registered on the client. The client calls `mcpClient.listTools()` to *discover* whatever the server currently exposes, then reshapes that into the `tools:` array for `messages.create`. Registration only happens once, on the server, via `server.registerTool(name, schema, fn)`.
+- Transport = the wire the client and server talk over. `stdio` (used here) = server runs as a local subprocess, client and server exchange messages over stdin/stdout — no network involved. Remote MCP servers use HTTP/SSE instead.
+- Under the hood MCP uses JSON-RPC as the message format, but the SDK hides that — what I write (`registerTool`, `listTools`, `callTool`) looks just like Day 1's `register`/`getDefinitions`/`execute`, just pointed at a server object instead of a local Map.
+- Tool errors on the server are returned as normal content with `isError: true`, not thrown — same "fail loud but readable" pattern as Day 2, so the model can read the error text and react instead of the process crashing.
+- MCP also defines **resources** (data handed to the model as context, not actively requested mid-conversation) and **prompts** (reusable server-side prompt templates) — not used in this showcase, just tools.
+- An MCP server is NOT a REST API, even over HTTP. REST = one URL per action (`/getUserId`, `/getTransactions`). MCP = one URL for everything (`/mcp`); *which* action to run is a `method`/`name` field inside a JSON-RPC request body, not the URL path. Discovery (`tools/list`) is how a client learns what actions exist, instead of reading REST docs.
+- JSON-RPC is just a fixed envelope shape for a request/response: `{jsonrpc: "2.0", id, method, params}` in, `{jsonrpc: "2.0", id, result}` (or `error`) out. `id` matches a response back to its request. MCP picked this format instead of inventing its own; the SDK hides it, but nothing stops hand-crafting it with raw `curl`/`fetch` — just painful without the client library.
+- `StdioServerTransport` is self-contained (SDK owns stdin/stdout). `StreamableHTTPServerTransport` is NOT — SDK provides no web server, I bring my own (Express) and call `transport.handleRequest(req, res, body)` from my own routes. This is the actual extra work in going from local-only to "anyone can reach it."
+- Auth is entirely my own responsibility, at every transport. The SDK does not validate who's calling — I write a middleware/check ahead of the MCP route (bearer token compared against a secret, or in production, looked up against a DB and resolved to a user identity so tool handlers can scope data per-caller).
+- HTTP has no memory between requests, so MCP sessions are explicit over HTTP: first `initialize` request gets a `mcp-session-id`, server keeps a transport object alive per session ID, all follow-up requests (`POST` = send message, `GET` = open server's streaming reply channel, `DELETE` = end session) route by that ID. stdio doesn't need this — the subprocess itself IS the session.
+- To go from "runs on my machine" to "anyone can reach it post-auth": (1) swap stdio transport for HTTP transport, (2) run the process as a long-lived host (EC2/Mac mini/Fly.io/etc., not spawned per-client), (3) put auth in front of the MCP route, (4) scope tool logic by the authenticated identity, not by whatever ID the caller happens to pass in.
+- Examples now organized by transport in their own folders: `example-stdio-local/` (own tools, local subprocess), `example-http-custom/` (own tools, real HTTP + auth), `example-http-github/` (consuming GitHub's real hosted server — no server file needed, GitHub already runs it).
+
+## Still need to cover / do
+- Read Lessons.md sources (Anthropic MCP docs, MCP protocol explainer, MCP GitHub repo) and log notes here.
+- Connect to an existing MCP server (filesystem or fetch) and run 5 tasks through it — log observations.
+- Run example-stdio-local/mcp-server.js + mcp-client.js for real (`npm install @modelcontextprotocol/sdk zod` first), confirm the dependent getUserId -> getTransactions chain works over MCP end to end.
+- Run example-http-custom/mcp-server-http.js + mcp-client-http.js for real (`npm install express` too), confirm the same chain works over actual HTTP with token auth.
+- Try example-http-github/mcp-client-github.js with a real GitHub PAT, confirm it can answer a real repo/issue question via GitHub's live MCP server.
+- Week 3 Day 5: Week 3 Integration Project (Personal Research Agent)

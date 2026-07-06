@@ -14,3 +14,4 @@ This project is a self-directed AI/LLM engineering curriculum (see `Syllabus/AI.
 
 ## Explanations
 - Whenever explaining a flow/process (e.g. a request loop, a multi-step mechanic), lead with an ASCII flow diagram before the prose walkthrough — diagrams first makes it easier to follow.
+- Every code example (`example.js`, or any `mcp-*.js`/multi-file example) must have an ASCII flow diagram showing its actual runtime flow (who calls what, in what order, what data passes between steps) in its accompanying explanation doc — not just prose walkthroughs.
