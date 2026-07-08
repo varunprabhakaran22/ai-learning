@@ -289,6 +289,15 @@
 
 ---
 
+#### Day 6 — LLM Pipeline Hooks (intro)
+- **Theory:** Hooks are your own business logic, not an LLM prompt — plain functions that run at fixed points in the request/tool lifecycle (before a request goes out, before/after a tool executes). The model is never aware hooks exist, same as it's unaware the `ToolRegistry` exists.
+- **Read:** `"middleware pattern software design"` (same pattern, different domain)
+- **Experiment:** add a single logging hook around Week 3's `registry.execute()` with zero changes to the calling code — observe the decoupling
+- **🏗️ Showcase Task:** minimal `beforeToolCall` hook wired into the Day 3 `ReActLoop` — e.g. block a tool call if its input fails a simple check, before the real function ever runs
+- **Note:** kept intentionally small — full depth (transform hooks, ordering/failure semantics, chaining) deferred until a real need shows up later in the syllabus
+
+---
+
 ### WEEK 4 — RAG & Knowledge Systems
 
 **Week Goal:** Build systems where LLMs answer from YOUR data, not just training

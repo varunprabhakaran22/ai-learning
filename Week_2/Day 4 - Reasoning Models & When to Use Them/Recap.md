@@ -20,6 +20,11 @@
 - Need to record *why* a task got routed where it did, so cost blowups later can be traced back to a bad classification instead of staying a mystery.
 - Same instinct as Week 1's "log what was dropped" and Day 2's validation-error logging — every automated tradeoff decision should leave a trace.
 
+## Interview gotcha — using an LLM to do the classifying is itself a risk
+- If `classifyTask()` is itself an LLM call, it adds a round-trip (cost + latency) before the real work even starts.
+- Worse: a misclassification fails *silently* — a complex task routed to a cheap/weak model just produces a confidently wrong answer, no crash, no error anywhere to catch it.
+- Mitigate: use the cheapest possible model (or a non-LLM heuristic first-pass) for classification, log every routing decision for audit, and default to the *more* capable model when the classifier itself is low-confidence rather than guessing cheap.
+
 ## The Overall Shift
 ```
 User:      "Just use the smartest model for everything, it can't hurt."

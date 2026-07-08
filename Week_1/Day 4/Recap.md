@@ -7,10 +7,16 @@
 ## Tokens = Money + Latency
 - **User thinks:** "Tokens just fill up the context window."
 - **Engineer thinks:** "Every token is billed, and input/output are priced differently — output costs more per token because it's generated one at a time (sequential, must re-attend to everything before it) while input is read in one parallel pass. A verbose system prompt that causes long replies can cost more than a big static history."
+- **Interview gotcha — `max_tokens` is a latency lever, not just a cost lever:** it's a cap, not a target. Because generation is autoregressive (one token at a time, sequentially), a higher cap means if the model rambles, you pay real wall-clock time for every extra token — this can directly blow an SLA (e.g. a 3s response budget), independent of cost. "Bump max_tokens up to be safe" is wrong reasoning: size it to the *expected* output shape (schema/format constraints, or a lower cap + retry), don't pad it.
+
+## Sliding Window + Tool Calls (Gotcha)
+- **User thinks:** "Drop the oldest messages first, simple."
+- **Engineer thinks:** "Naive oldest-first trimming can orphan a `tool_use`/`tool_result` pair — dropping the assistant's tool call but keeping its result (or vice versa). Anthropic/OpenAI APIs require these to stay adjacent; an orphaned pair gets the whole request rejected as malformed. Trimming must be tool-call-aware: always drop or keep a `tool_use`+`tool_result` as one atomic unit, never split it mid-pair."
 
 ## Counting Tokens Before Sending
 - **User thinks:** "I'll find out if I'm over budget when the API call fails."
 - **Engineer thinks:** "The tokenizer is deterministic and known, so I can count locally before sending — no network round-trip needed. This lets me trim proactively instead of discovering the overflow from a failed call."
+- **Interview gotcha — two different failures get conflated:** (1) **context-window overflow** = input tokens + requested max_tokens > the model's total window → a **400 Bad Request**, a structural per-request error, nothing to do with usage over time. (2) **rate limit / quota exhaustion** ("token limit exhausted" messages, tokens-per-minute caps, plan usage caps) → a **429 Too Many Requests**, an account/org-level cumulative-usage error, unrelated to any single prompt's size. Different causes need different fixes: overflow needs pre-emptive local token counting + trimming; 429s need backoff/retry, request queuing, or model tiering (Week 7's `ResilienceLayer`/`CostOptimizer`).
 
 ## Sliding Window (Trimming Strategy)
 - **User thinks:** "Just cut off old messages somehow when it gets full."

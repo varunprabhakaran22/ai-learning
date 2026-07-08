@@ -9,6 +9,10 @@
 - **Code-level:** actually parsing + validating (Zod/schema) before trusting the response. This is what makes it *actually* reliable.
 - Need both — a better prompt reduces how often validation has to catch something, but validation is still non-negotiable.
 
+## Interview gotcha — how true structured-output *enforcement* actually guarantees syntax
+- True JSON mode / schema-constrained output isn't "asking harder" — it's **constrained decoding**: at each generation step, the token sampler masks out (zeroes the probability of) any token that would violate the schema's grammar, so an invalid token is structurally impossible to emit, not just unlikely.
+- This guarantees valid *syntax* only. It does **not** guarantee valid *content* — a syntactically perfect JSON object can still contain a hallucinated value or a wrong number in a correctly-typed field. Schema validation catches shape errors; it can't catch a confidently wrong value that happens to be the right type.
+
 ## Schema = shared contract
 - One schema definition does two jobs: tells the model the shape (via prompt), tells the code what to check (via validation).
 - Because it's the same definition in both places, they can't silently drift apart when the schema changes.

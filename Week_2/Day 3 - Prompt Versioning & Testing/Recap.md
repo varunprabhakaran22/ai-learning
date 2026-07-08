@@ -20,6 +20,11 @@
 - Grid of version × test case → pass/fail.
 - Catches regressions eyeballing would miss: a version fixed for one case can quietly break others that used to pass — invisible without seeing the whole grid at once.
 
+## Interview gotcha — a higher average can hide a worse prompt
+- v3 scoring higher *on average* than v2 isn't automatically the better ship candidate — check variance across test cases too.
+- High variance (some near-perfect, some much worse) means the prompt is unreliable: which case a real user's input resembles is unpredictable, so the worst-case behavior is what actually matters in production.
+- A lower-but-consistent average (bounded, known worst case) is often the safer ship than a higher-but-volatile one — investigate *why* the variance exists before shipping the higher-average version.
+
 ## The Overall Shift
 ```
 User:      "I tweaked the prompt and it looks better now."

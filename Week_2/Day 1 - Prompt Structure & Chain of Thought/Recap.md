@@ -23,6 +23,10 @@
 - Built `PromptBuilder`: context, examples, chain-of-thought, output format — each addable independently.
 - Point of splitting them up: can change one piece (e.g. just the CoT flag) and re-test, instead of rewriting one big prompt string and losing track of what changed.
 
+## Interview gotcha — a system prompt rule vs. a user's conflicting request
+- Example: system prompt says "always cite reasoning," a later user message says "skip explanations, just the answer." System prompt has the training-taught positional bias, but that's a soft bias, not a hard guarantee — a persistent/clever user message can still erode it over turns.
+- Don't leave the resolution to chance. Design the precedence explicitly into the system prompt itself (e.g. "you may omit reasoning from the *visible* response, but internal reasoning is otherwise mandatory"), or enforce it in code — always run CoT internally regardless of what's shown, strip it from the final response only if the user opted out. Safety-critical constraints belong in code, not in hoping the model arbitrates correctly.
+
 ## The Overall Shift
 ```
 User:      "Just ask the question, the model will figure out what I want."

@@ -18,6 +18,12 @@
 - Day 3: tool #2's input literally doesn't exist until tool #1's real result comes back → loop is FORCED to run 2+ iterations, not just "may run more than once."
 - Same loop code both times — the difference is whether a later tool's input is knowable up front or only after observing an earlier real result. See side-by-side diagrams now added to both Day 1 and Day 3 example.js headers.
 
+## Interview gotcha — two failure modes look identical from the outside, but need different fixes
+- A max-iteration cap is the blunt stop, but "the loop has been running for 20 iterations" can mean two very different things underneath, and treating both as the same bug is wrong:
+  1. **Infinite/circular reasoning** — the model keeps calling the same tool with the same or trivially different input, never converging (e.g. misreading a result and re-querying). This is a real bug — fix by better prompting, or by detecting repeated identical tool calls and forcibly breaking the loop.
+  2. **Legitimately long multi-step task** — the task genuinely needs many sequential steps and each iteration is making real progress. This is NOT a bug — an iteration cap set too low kills valid work. Fix by raising the cap or decomposing into sub-tasks, not by "debugging" something that isn't broken.
+- Telling them apart requires reading the actual trace of what each iteration did (Day 1's full request/response log), not just counting iterations.
+
 ## Still need to cover / do
 - Read Lessons.md sources (ReAct pattern, agentic loop design) and log the 3+ sequential tool call experiment results here, including the intentional-failure recovery observation.
 - Run example.js for real, confirm the dependent 2-tool chain (getUserId -> getTransactions) and the failure-case recovery both work.

@@ -25,6 +25,12 @@
 - Without one: tool definitions get copy-pasted at every call site, and the description can drift from what the function actually does.
 - With one: name, description, schema, and the real function live together in one place — execution always looks up the current, correct implementation.
 
+## The raw model has ZERO built-in capabilities — not even Read/Edit/Bash
+- With `tools: []` (or no `tools:` key), the model can ONLY read the text I send and generate text back — no filesystem access, no network, no code execution, no "secretly capable but restricted." It's not a permissions issue, there's no mechanism at all until I build one.
+- `name` in a `tool_use` block can ONLY be a name I personally typed into `registry.register(...)` — never a built-in like "Read"/"Grep"/"Bash". Those are Claude CODE's (the CLI product) own pre-registered tools, wired into a different harness entirely — completely unrelated to the raw Anthropic API this project uses.
+- Claude Code's model *feels* capable of reading/editing files only because Anthropic (as the developer, in that product) already did steps 1-3 below — same pattern I'm building myself, not a different kind of model.
+- Every capability beyond generating text requires ME to: (1) write a real function, (2) register it with name/description/schema, (3) pass it into `tools:` on the API call. Skip any step and that capability doesn't exist for the model, no matter how the prompt is worded.
+
 ## Registering a tool ≠ the model knowing about it
 - `registry.register(...)` only fills my local Map — the model has zero awareness of this by itself.
 - The model only learns about tools when `registry.getDefinitions()` is passed as `tools:` in the actual API call — and this happens fresh on every call (model is stateless, no memory of tools from a prior request).
@@ -45,6 +51,10 @@ Engineer:  "The model can only REQUEST things — it outputs a structured
             the model's decision to use a tool at all depends entirely
             on how well I described it — not on the tool being present."
 ```
+
+## Interview gotcha — a runtime tool failure needs a specific error back, not a silent retry
+- If a tool throws at runtime (e.g. `readFile` → "file not found"), retrying the exact same call with the exact same input will fail identically every time — nothing about the situation changed, so blind retry just burns calls for free.
+- Send the actual structured error back as the `tool_result` (path attempted, error type) — same "specific feedback, not generic" principle as Week 2 Day 2's Zod validation retry. Specific errors let the model choose a genuinely different next action (try another path, ask the user, give up) instead of repeating itself.
 
 ## Still need to cover / do
 - Run example.js for real — confirm 0/1/2-tool-call questions route correctly through the loop
