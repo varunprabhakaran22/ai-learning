@@ -34,15 +34,15 @@ ML CORE             How models are built and trained
 ## LAYER 1 — Foundation (Shared by Both)
 > You need this regardless of which path you take
 
-| Topic | What It Covers |
-|---|---|
-| **Python for ML** | NumPy, Pandas, Matplotlib — the data manipulation layer |
-| **Linear Algebra** | Vectors, matrices, dot products — how data moves through models |
-| **Calculus Basics** | Derivatives, gradients — how models learn (backpropagation intuition) |
-| **Statistics & Probability** | Distributions, Bayes theorem, hypothesis testing |
-| **Data Wrangling** | Cleaning, transforming, splitting datasets |
+| Topic | What It Covers | Key libraries |
+|---|---|---|
+| **Python for ML** | NumPy, Pandas, Matplotlib, Seaborn — the data manipulation + viz layer | `numpy` (arrays/ops), `pandas` (DataFrames/EDA), `matplotlib` (static plots), `seaborn` (statistical viz) |
+| **Linear Algebra** | Vectors, matrices, dot products — how data moves through models | — |
+| **Calculus Basics** | Derivatives, gradients — how models learn (backpropagation intuition) | — |
+| **Statistics & Probability** | Distributions, Bayes theorem, hypothesis testing | — |
+| **Data Wrangling** | Cleaning, transforming, splitting datasets | `pandas` |
 
-**Honest time estimate:** 4–6 weeks at 1hr/day if starting from scratch.
+**Honest time estimate:** 4–6 weeks at 1hr/day if starting from scratch (~64 hrs total at 6–10 hrs/week).
 With your engineering background — 2–3 weeks focused on the ML-specific parts.
 
 ---
@@ -50,16 +50,16 @@ With your engineering background — 2–3 weeks focused on the ML-specific part
 ## LAYER 2 — ML Core (Shared by Both)
 > Understanding how models work under the hood
 
-| Topic | What It Covers |
-|---|---|
-| **Supervised Learning** | Linear regression, logistic regression, decision trees, SVMs |
-| **Unsupervised Learning** | Clustering (K-means), dimensionality reduction (PCA) |
-| **Model Evaluation** | Train/val/test splits, overfitting, bias-variance tradeoff, metrics |
-| **Feature Engineering** | How raw data becomes model-ready input |
-| **Neural Network Basics** | Perceptrons, activation functions, forward/backward pass |
-| **Classical ML Libraries** | Scikit-learn — the gateway to practical ML |
+| Topic | What It Covers | Key libraries |
+|---|---|---|
+| **Supervised Learning** | Linear regression, logistic regression, decision trees, SVMs | `scikit-learn` |
+| **Unsupervised Learning** | Clustering (K-means), dimensionality reduction (PCA) | `scikit-learn` |
+| **Model Evaluation** | Train/val/test splits, overfitting, bias-variance tradeoff, metrics | `scikit-learn` |
+| **Feature Engineering** | How raw data becomes model-ready input | `pandas`, `scikit-learn` |
+| **Neural Network Basics** | Perceptrons, activation functions, forward/backward pass | — |
+| **Classical ML Libraries** | Scikit-learn — the gateway to practical ML | `scikit-learn` |
 
-**Honest time estimate:** 4–6 weeks at 1hr/day
+**Honest time estimate:** 4–6 weeks at 1hr/day (~100 hrs total at 8–12 hrs/week)
 
 ---
 
@@ -78,23 +78,28 @@ With your engineering background — 2–3 weeks focused on the ML-specific part
 
 **→ This is your current path. Already planned in detail.**
 
+**Note on hand-rolled vs. library code:** the current syllabus deliberately hand-rolls every primitive (chunking, embedding, cosine similarity, BM25, re-ranking, etc.) before naming the library that wraps it — see `Applied AI Syllbus/Syllabus/AI.md`'s Jargon Decoder table for exactly which library (LangChain, LangGraph, LangSmith, Hugging Face) maps to which hand-built primitive, and which week each gets its dedicated library-usage day (e.g. LangGraph → Wk7 D4, Hugging Face/local models → Wk12 D2). "When do I actually practice calling LangChain in realistic production shape, not just know the mapping" is intentionally deferred to **Course 2 (Infra & System Design, below)** — that's where real deployment-shaped code belongs, once the primitives are solid.
+
 ---
 
 ## LAYER 3B — ML Engineer Specialization
 > What you'd add to become an ML Engineer on top of the foundation
 
-| Module | Topics |
-|---|---|
-| **Deep Learning** | CNNs, RNNs, attention mechanism, transformer architecture |
-| **PyTorch / TensorFlow** | Building and training neural networks from scratch |
-| **Training Infrastructure** | GPUs, distributed training, mixed precision, gradient checkpointing |
-| **Model Optimization** | Quantization, pruning, distillation — making models smaller/faster |
-| **Fine-tuning** | LoRA, QLoRA, PEFT — adapting pretrained models to specific domains |
-| **MLOps** | Experiment tracking (MLflow, W&B), model versioning, training pipelines |
-| **Evaluation & Benchmarking** | BLEU, ROUGE, perplexity, domain-specific benchmarks |
-| **Research Literacy** | Reading papers, implementing from scratch, staying current |
+| Module | Topics | Key libraries |
+|---|---|---|
+| **Deep Learning** | CNNs, RNNs, attention mechanism, transformer architecture | `PyTorch` or `TensorFlow`/Keras |
+| **PyTorch / TensorFlow** | Building and training neural networks from scratch (tensors, models, `tf.data`) | `PyTorch`, `TensorFlow` |
+| **LLM & Transformer Libraries** | Loading/running pretrained transformer models, prompt engineering at the library level | Hugging Face `transformers`, Anthropic SDK, LangChain (chains/RAG usage, not just the mapping table) |
+| **Training Infrastructure** | GPUs, distributed training, mixed precision, gradient checkpointing | — |
+| **Model Optimization** | Quantization, pruning, distillation — making models smaller/faster | — |
+| **Fine-tuning** | LoRA, QLoRA, PEFT — adapting pretrained models to specific domains | Hugging Face `peft`/`transformers` |
+| **MLOps** | Experiment tracking, model versioning, training pipelines | MLflow, Weights & Biases (W&B) |
+| **Evaluation & Benchmarking** | BLEU, ROUGE, perplexity, domain-specific benchmarks | — |
+| **Research Literacy** | Reading papers, implementing from scratch, staying current | — |
 
 **Honest time estimate:** 6–9 months at 1hr/day — this is a deep path
+
+**Production & systems (closes out Layer 3B, either path):** testing, async/concurrency, Docker, APIs, deployment, logging — the same "Production Systems" and "Infra & System Design" modules already listed under Layer 3A apply here too; this isn't a separate track, it's shared groundwork both specializations eventually need.
 
 ---
 
