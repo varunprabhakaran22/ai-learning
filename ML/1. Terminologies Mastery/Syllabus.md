@@ -10,7 +10,12 @@
 
 ---
 
-## Python Programming (10 Days)
+## Python Programming (Day 0 + 14 Days)
+
+> **Added beyond the source PDF's original 10-day count (2026-07-13):** Day 0 (runtime-model foundation) and Days 11-14 (type hints, testing, iterators/context managers + lint/format tooling, asyncio) were not in `02.Terminologies Mastery.pdf`'s original term list. Added after an explicit gap-check against "what does a working Python developer need to know" — the PDF's 10 days cover classical syntax/data-science tooling well but omit type hints, testing, the general iterator/context-manager protocol, lint/format tooling, and async — all standard expectations for a professional Python role, not just ML scripting. Confirmed with the user before adding.
+
+**Day 0 — Runtime Model: Interpreter vs Compiler, Bytecode, Sync vs Async**
+Not one of the PDF's 80 terms — a prerequisite mental model established before Day 1 so every later day has ground under it. Covers: what a compiler vs an interpreter actually does, why Python needs `python3` installed/present to run anything, bytecode + the `__pycache__`/`.pyc` cache, why an uncaught error halts execution at that line rather than undoing prior output, and Python's sync-by-default execution model vs JS's browser-provided event loop (with `asyncio`/`async`/`await` previewed here, full depth deferred to Day 14).
 
 **Day 1 — Variables & Data Types**
 
@@ -31,6 +36,18 @@
 **Day 9 — Pandas**
 
 **Day 10 — Matplotlib & Seaborn, Jupyter Notebook, API Requests**
+
+**Day 11 — Type Hints & the `typing` Module**
+*(Added beyond source PDF.)* `def foo(x: int) -> str:` style annotations, `Optional`/`Union`/`list[str]`-style generics, why annotations aren't enforced at runtime (unlike TS) and what actually checks them.
+
+**Day 12 — Testing with `pytest`**
+*(Added beyond source PDF.)* Writing test functions, `assert`, fixtures, running a test suite — the professional-baseline skill the original 10 days never touched.
+
+**Day 13 — Iterators, Context Managers & Lint/Format Tooling**
+*(Added beyond source PDF.)* The general iterator protocol (`__iter__`/`__next__`) underneath Day 4's generators, writing a custom `with`-compatible class (`__enter__`/`__exit__`) beyond just using `with open(...)`, plus a practical pass on `mypy`/`black`/`ruff` alongside Day 7's Git/packaging content.
+
+**Day 14 — `asyncio` / async-await in Depth**
+*(Added beyond source PDF.)* Full depth on the sync-vs-async preview from Day 0 — coroutines, `asyncio.run`, `await`, concurrent tasks, async HTTP (`httpx`/`aiohttp`) vs synchronous `requests`. Not needed for the ML/DL/NLP days directly ahead, but required to call this track complete for a general Python-developer role (e.g. backend/API work later in `Applied AI Syllabus`).
 
 ---
 
