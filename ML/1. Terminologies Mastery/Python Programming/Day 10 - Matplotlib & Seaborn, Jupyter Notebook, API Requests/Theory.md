@@ -10,7 +10,7 @@ Like Day 7, today's three topics don't mechanically depend on each other — the
 
 ## ① Matplotlib — the foundational plotting library
 
-**The problem:** a table of numbers (a NumPy array, a Pandas column) is hard to spot patterns in by eye. A chart makes trends, outliers, and relationships immediately visible. **Matplotlib** is Python's foundational plotting library — older, lower-level, and the base that most other Python plotting tools (including Seaborn, ②) are built on top of.
+**The problem:** a table of numbers (a NumPy array, a Pandas column) is hard to spot patterns in by eye. A chart makes trends, outliers, and relationships immediately visible. **Matplotlib** is Python's foundational plotting library — older, lower-level, and the base that most other Python plotting tools (including Seaborn, which is built directly on top of it to produce polished statistical charts in far less code) are built on top of.
 
 ```python
 import matplotlib.pyplot as plt
@@ -43,7 +43,7 @@ df = pd.DataFrame({"age": [25, 30, 35, 40], "salary": [40000, 55000, 62000, 7000
 plt.scatter(df["age"], df["salary"])
 plt.show()
 ```
-A Pandas `Series` (a column) works directly as `plt`'s `x`/`y` input — no manual conversion needed, since a `Series` behaves like an array wherever one is expected (Day 9, ⓪).
+A Pandas `Series` (a column) works directly as `plt`'s `x`/`y` input — no manual conversion needed, since a `Series` is just a labeled version of a NumPy array, built on top of it and behaving like one wherever an array is expected (Day 9's core point).
 
 ---
 
@@ -83,7 +83,7 @@ Full depth on interpreting these specific chart types (what a boxplot's whiskers
 
 ## ③ Jupyter Notebook — an interactive, cell-based way to run Python
 
-**The problem with a plain `.py` script for data work specifically:** every script you've written so far runs top to bottom, once, printing output to a terminal, then exits. For exploring data — trying an operation, looking at the result, adjusting, trying again — re-running an entire file from scratch every time (re-loading a large CSV, re-computing everything before the one line you actually changed) is slow and wasteful. **Jupyter Notebook** is an interactive, browser-based environment for running Python in small, independent, re-runnable chunks called **cells**, with each cell's output (including charts, ①②) displayed directly beneath it, inline.
+**The problem with a plain `.py` script for data work specifically:** every script you've written so far runs top to bottom, once, printing output to a terminal, then exits. For exploring data — trying an operation, looking at the result, adjusting, trying again — re-running an entire file from scratch every time (re-loading a large CSV, re-computing everything before the one line you actually changed) is slow and wasteful. **Jupyter Notebook** is an interactive, browser-based environment for running Python in small, independent, re-runnable chunks called **cells**, with each cell's output (including charts from Matplotlib or Seaborn) displayed directly beneath it, inline.
 
 ```
 A notebook file (.ipynb) is a SEQUENCE of cells:
