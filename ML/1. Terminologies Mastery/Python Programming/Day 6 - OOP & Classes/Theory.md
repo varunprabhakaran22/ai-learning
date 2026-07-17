@@ -22,7 +22,7 @@ class Person {                        class Person:
 }                                      
 ```
 
-This should look structurally familiar — JS classes and Python classes solve the exact same problem, with different keywords and one significant difference (`self`) covered in ②.
+This should look structurally familiar — JS classes and Python classes solve the exact same problem, with different keywords and one significant difference: Python requires every method to explicitly declare `self` as its first parameter, where JS's `this` is implicit.
 
 ---
 
@@ -127,7 +127,7 @@ print(varun.species)                  # "Something else"  — varun's own, new i
 print(priya.species)                  # "Homo sapiens"    — UNCHANGED, still reading the class attribute
 ```
 
-This is the same underlying mechanism as Day 3 ④'s function-scope assignment rule (assigning creates a new binding rather than modifying an outer one) — just applied to attributes instead of local variables. To actually change the *shared* class attribute for everyone, you must assign to it through the class name itself: `Person.species = "changed"`.
+This is the same underlying mechanism as Day 3's function-scope assignment rule (assigning to a name inside a function always creates a new local binding rather than modifying an outer variable of the same name) — just applied to attributes instead of local variables. To actually change the *shared* class attribute for everyone, you must assign to it through the class name itself: `Person.species = "changed"`.
 
 ---
 
@@ -179,7 +179,7 @@ class Student extends Person {            class Student(Person):
 
 ## ⑤ Custom exceptions — a concrete, practical use of inheritance (closing Day 5's deferred gap)
 
-Day 5 ③ deferred custom exception classes until `class`/inheritance were covered — here's the complete mechanism, and it's a direct, small application of ④:
+Day 5 deferred custom exception classes (noting only that raising a built-in type with a clear message was enough for the time being) until `class`/inheritance were covered — here's the complete mechanism, and it's a direct, small application of inheritance:
 
 ```python
 class InsufficientFundsError(Exception):    # inherits from the built-in Exception type

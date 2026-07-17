@@ -6,7 +6,7 @@
 
 **Source:** article/search on prompt versioning best practices.
 
-Reference material, not core theory — the *concept* (keep old versions, diff/rollback, changelog) is in Theory.md `③`. Note here after reading:
+Reference material, not core theory — the *concept* (keep old versions, diff/rollback, changelog) is already covered. Note here after reading:
 
 ```
 - Common file/storage conventions people actually use (JSON files per
@@ -39,10 +39,14 @@ Reference material, not core theory — the *concept* (keep old versions, diff/r
 
 ```
 Task:   write 3 versions of the same prompt (e.g. a summarizer),
-        define 5 test cases with pass/fail criteria (Theory.md ④)
+        define 5 test cases each with an input and a pass/fail criteria
+        statement (a property the output must satisfy, not an exact
+        string match)
 
 Measure: run all 3 versions against all 5 test cases, fill in the
-         comparison table (Theory.md ⑤)
+         comparison table (a versions-by-test-cases grid of PASS/FAIL
+         that makes any regression — a later version failing a case
+         an earlier version passed — visible at a glance)
 
 Record: which version actually wins overall, and specifically whether
         any version REGRESSES a case an earlier version passed —

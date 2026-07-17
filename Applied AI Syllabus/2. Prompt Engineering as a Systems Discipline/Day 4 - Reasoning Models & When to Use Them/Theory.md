@@ -27,7 +27,7 @@ Reasoning model:
 
 ## ② The Core Tradeoff: Accuracy vs Cost and Latency
 
-Reusing Week 1's tokens = money + latency fact: reasoning models spend extra tokens on the thinking phase *before* the visible/final answer, and those thinking tokens are still generated sequentially (Week 1 fact ②) — so the tradeoff is direct and mechanical, not just a vague "smarter but slower":
+Reusing the fact that output tokens are generated one at a time — each new token requires re-processing everything before it, so it can't be parallelized like reading input can, making output tokens both pricier and slower than input tokens: reasoning models spend extra tokens on the thinking phase *before* the visible/final answer, and those thinking tokens are still generated sequentially — so the tradeoff is direct and mechanical, not just a vague "smarter but slower":
 
 ```
 Standard model:    input → (relatively few generation steps) → answer
@@ -39,7 +39,7 @@ Reasoning model:    input → (many internal reasoning steps, billed as
                     hard multi-step problems
 ```
 
-**Why this isn't "always use the smarter one":** the extra thinking tokens cost money and time whether or not the task actually needed them. Day 1 fact ② already showed CoT does nothing for simple lookups — reasoning models have the same ceiling: paying for deep internal reasoning on a task that had no reasoning to do is pure waste, not "extra safety."
+**Why this isn't "always use the smarter one":** the extra thinking tokens cost money and time whether or not the task actually needed them. Day 1 already showed CoT does roughly nothing for simple lookups, since a fact retrieval needs no "scratch space" to reason through — reasoning models have the same ceiling: paying for deep internal reasoning on a task that had no reasoning to do is pure waste, not "extra safety."
 
 ---
 
@@ -63,13 +63,13 @@ Overkill / no benefit:
     nothing to add, you're just paying for idle thinking tokens
 ```
 
-This is the same shape as Day 1 fact ②'s CoT-helps-vs-doesn't split, just moved up a level: the *decision of which model to use* now carries the same "does this task actually need reasoning" judgment that CoT-vs-no-CoT required per prompt.
+This is the same shape as Day 1's finding that CoT helps multi-step reasoning but does nothing for simple lookups, just moved up a level: the *decision of which model to use* now carries the same "does this task actually need reasoning" judgment that CoT-vs-no-CoT required per prompt.
 
 ---
 
 ## ④ Task Classification as the Routing Decision
 
-Since the tradeoff (③) depends entirely on task type, the practical system design is: classify the incoming task *before* calling any model, then route to the model/preset suited to that classification.
+Since the tradeoff between accuracy and cost/latency depends entirely on task type, the practical system design is: classify the incoming task *before* calling any model, then route to the model/preset suited to that classification.
 
 ```
 incoming task
@@ -88,7 +88,7 @@ classify: simple / complex / creative / analytical
 
 ## ⑤ Log the Routing Decision, Not Just the Result
 
-Because the classification step determines a cost/latency outcome (③), a routing system needs to record *why* it sent a task where it did — otherwise you can't audit whether the router is making good decisions over time.
+Because the classification step determines which model gets used and thus a cost/latency outcome, a routing system needs to record *why* it sent a task where it did — otherwise you can't audit whether the router is making good decisions over time.
 
 ```
 Without logging:  task comes in → routed somewhere → answer comes back
@@ -109,7 +109,7 @@ This is the same instinct as Day 4 Week 1's "log what was dropped" for the slidi
 
 ## ⑥ Switching Models Mid-Conversation — Why the History Doesn't Care
 
-Because the model is stateless (Week 1 fact ①), "conversation history" was never actually stored by the model — it's an array of messages *you* resend on every call. That fact has a direct consequence for routing: **switching which model you call mid-conversation is just changing the `model` field on the next call.** The same history array works with any model, because no model has an ongoing relationship with past calls — every call is independent, reading whatever messages you hand it.
+Because the model is stateless — every API call starts fresh with no memory of past calls — "conversation history" was never actually stored by the model — it's an array of messages *you* resend on every call. That fact has a direct consequence for routing: **switching which model you call mid-conversation is just changing the `model` field on the next call.** The same history array works with any model, because no model has an ongoing relationship with past calls — every call is independent, reading whatever messages you hand it.
 
 ```
 Prompt 1-5 (classified "simple"):
@@ -136,7 +136,7 @@ Prompt 6 (classified "complex"):
   DIFFERENT model that doesn't expect it.
 ```
 
-**The core idea:** there is no stateful "session" tied to one model. The routing decision (④) can change every single call without any migration step — the array of past turns is the only thing carried forward, and it's plain data, not something owned by whichever model produced it.
+**The core idea:** there is no stateful "session" tied to one model. The routing decision — which model/preset a task gets classified into and sent to — can change every single call without any migration step — the array of past turns is the only thing carried forward, and it's plain data, not something owned by whichever model produced it.
 
 ---
 

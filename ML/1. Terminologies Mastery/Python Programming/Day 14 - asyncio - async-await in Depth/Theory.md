@@ -41,7 +41,7 @@ import httpx
 async def fetch_all(urls):
     async with httpx.AsyncClient() as client:
         tasks = [client.get(url) for url in urls]
-        return await asyncio.gather(*tasks)     # ③ explains gather precisely
+        return await asyncio.gather(*tasks)     # gather runs all the coroutines concurrently, overlapping their waiting time (explained precisely below)
 
 start = time.time()
 asyncio.run(fetch_all(urls))
@@ -83,7 +83,7 @@ await asyncio.sleep(3)
 
 ## ③ Running multiple coroutines concurrently — `asyncio.gather`
 
-A single `await` on its own doesn't get you concurrency by itself — `await task_one()` followed by `await task_two()` still runs them one after another, each one's waiting time wasted rather than overlapped, exactly like the blocking `requests` loop in ①. **`asyncio.gather()` is what actually runs multiple coroutines concurrently**, letting their individual waiting periods overlap:
+A single `await` on its own doesn't get you concurrency by itself — `await task_one()` followed by `await task_two()` still runs them one after another, each one's waiting time wasted rather than overlapped, exactly like the earlier blocking `requests` loop that fetched 5 APIs one after another in ~10 seconds instead of overlapping their waits. **`asyncio.gather()` is what actually runs multiple coroutines concurrently**, letting their individual waiting periods overlap:
 
 ```python
 import asyncio
@@ -115,7 +115,7 @@ finished 3
 [10, 20, 30]
 ```
 
-**What's actually happening mechanically:** `asyncio.gather(fetch_one(1), fetch_one(2), fetch_one(3))` hands all three coroutine objects to the event loop at once. Each one runs until its own `await asyncio.sleep(2)` line, at which point it pauses and hands control back — the event loop immediately starts the *next* coroutine, which also runs to its own `await` and pauses, and so on. Because all three are "waiting" during the same overlapping window, the total time is ~2 seconds (the longest single wait), not ~6 seconds (2+2+2, if run one after another) — this is the direct, concrete mechanism behind ①'s "5 APIs in ~2 seconds instead of ~10" example.
+**What's actually happening mechanically:** `asyncio.gather(fetch_one(1), fetch_one(2), fetch_one(3))` hands all three coroutine objects to the event loop at once. Each one runs until its own `await asyncio.sleep(2)` line, at which point it pauses and hands control back — the event loop immediately starts the *next* coroutine, which also runs to its own `await` and pauses, and so on. Because all three are "waiting" during the same overlapping window, the total time is ~2 seconds (the longest single wait), not ~6 seconds (2+2+2, if run one after another) — this is the direct, concrete mechanism behind the earlier "5 APIs in ~2 seconds instead of ~10" example, where asyncio helps because that work is I/O-bound (waiting on network responses) rather than CPU-bound.
 
 **This is still single-threaded, worth restating precisely since it's easy to mistake for parallelism:** at any given instant, only one coroutine's code is actually executing — the "concurrency" here is entirely about overlapping *waiting* periods, achieved by rapidly switching which paused coroutine gets resumed next, never by literally running Python code on two CPU cores at once (that would need a genuinely different mechanism — threads or multiprocessing — outside this day's scope).
 

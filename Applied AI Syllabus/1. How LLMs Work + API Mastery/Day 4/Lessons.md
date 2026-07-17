@@ -6,7 +6,7 @@
 
 **Source:** OpenAI's `tiktoken` library docs, Anthropic's token-counting docs.
 
-These are reference material, not core theory — the *concept* (fixed vocabulary, count locally before sending) is in Theory.md `③`. This section is where you note provider-specific, likely-to-change details after actually reading the docs:
+These are reference material, not core theory — the *concept* (the tokenizer's vocabulary is fixed and deterministic, so you can run the same splitting algorithm locally to get an exact token count before sending the API request, instead of estimating) is in Theory.md. This section is where you note provider-specific, likely-to-change details after actually reading the docs:
 
 ```
 - Exact library/endpoint names and how to call them

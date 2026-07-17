@@ -82,7 +82,7 @@ Lesson: if you want to cut cost, shortening expected OUTPUT length
 
 Day 1,2,3's token-bucket math (system + history + question = total, compare to window) assumed you already know each piece's token count. Here's the missing step: **how do you actually get that number?**
 
-You cannot count tokens by eyeballing text — "roughly ¾ a word" is only an estimate for planning, not precise enough to trust. Since the vocabulary from `①` is fixed and public, you can run the *exact same* splitting algorithm yourself, before calling the API, to get an exact count.
+You cannot count tokens by eyeballing text — "roughly ¾ a word" is only an estimate for planning, not precise enough to trust. Since the vocabulary is fixed once training ends and built via a public, known algorithm (BPE), you can run the *exact same* splitting algorithm yourself, before calling the API, to get an exact count.
 
 ```
 Without counting ahead of time:
@@ -110,14 +110,14 @@ Both exist for the same reason: **the tokenizer is deterministic and known**, so
 1. Assemble system + history + new message (as in Day 1,2,3's token bucket)
 2. Run each piece through the tokenizer/counter → get exact token counts
 3. Compare total against: context_window - max_tokens (reserved for reply)
-4. If over budget → apply a trimming strategy (see ④) BEFORE calling the API
+4. If over budget → apply a trimming strategy (e.g. a sliding window that drops oldest messages first) BEFORE calling the API
 ```
 
 ---
 
 ## ④ Budgeting & Truncation: The Sliding Window
 
-Once you know your token counts (`③`) and your budget (`②` + Day 1,2,3's bucket math), you need a strategy for when history doesn't fit. The simplest, most common default is a **sliding window**:
+Once you know your token counts (via a tokenizer/counter run before sending the request) and your budget (input/output pricing plus Day 1,2,3's bucket math), you need a strategy for when history doesn't fit. The simplest, most common default is a **sliding window**:
 
 ```
 fixed_cost = tokens(system prompt) + tokens(new user message)
@@ -166,7 +166,7 @@ all of it "fits" and none of it was trimmed.
 
 **Practical implication:** if you have one critical instruction or fact, don't bury it in the middle of a huge pasted document — put it in the system prompt (start) or right before your question (end).
 
-This is also *why* retrieval (RAG, mentioned in `④`) often beats "just paste the whole document in" once documents get long: retrieving only the relevant chunk avoids the middle entirely, rather than trusting the model to find it in a haystack.
+This is also *why* retrieval (RAG — searching a stored knowledge base for just the relevant pieces per query instead of keeping raw history) often beats "just paste the whole document in" once documents get long: retrieving only the relevant chunk avoids the middle entirely, rather than trusting the model to find it in a haystack.
 
 ---
 

@@ -52,8 +52,8 @@ from Day 1,2,3 + Day 4 into one week-level summary, per user/engineer contrast.)
 - `classify()` picks a preset via keyword heuristic — no extra model call, instant and free.
 - `fitToBudget()` counts tokens locally and slides the window before every call.
 - The trimmed history + system prompt + preset's temperature/top_p go into one `messages.create()` call.
-- The reply is appended back into history — that's the "memory" you're manually engineering (Day 1,2,3 fact ①, made concrete).
-- Session token/cost totals accumulate across turns using Day 4's pricing asymmetry (② ).
+- The reply is appended back into history — that's the "memory" you're manually engineering (there's no memory between API calls; you resend the full history every time, made concrete).
+- Session token/cost totals accumulate across turns using Day 4's pricing asymmetry (input is billed cheaper since it's read in one parallel pass, while output is billed pricier since it's generated one token at a time).
 - Known gap: no rate-limit retry/backoff on 429s — flagged, not built.
 
 ## The Overall Shift (Week 1)

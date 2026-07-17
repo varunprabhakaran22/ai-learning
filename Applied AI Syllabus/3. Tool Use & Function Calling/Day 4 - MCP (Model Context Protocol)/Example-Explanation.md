@@ -103,7 +103,7 @@ const transport = new StreamableHTTPClientTransport(
 - `StreamableHTTPClientTransport` instead of `StdioClientTransport` — no subprocess is spawned; this opens an HTTP connection to GitHub's server directly.
 - `requestInit.headers` carries a normal `Authorization: Bearer <token>` header — the same PAT-based auth you'd use for GitHub's REST API. Public/remote MCP servers need auth precisely because, unlike your local `mcp-server.js`, anyone on the internet could otherwise reach them and act as you.
 
-**What's identical to `mcp-client.js`:** everything after `connect()` — `listTools()`, building `claudeTools`, the `while (response.stop_reason === "tool_use")` loop, `callTool()`. Not one line of the tool-use loop changed. This is the concrete proof of Theory.md fact ④: MCP standardizes the transport, not the tool definition shape or the model's behavior — swapping stdio for HTTP, and a toy server for GitHub's real one, required changing exactly the connection setup and nothing else.
+**What's identical to `mcp-client.js`:** everything after `connect()` — `listTools()`, building `claudeTools`, the `while (response.stop_reason === "tool_use")` loop, `callTool()`. Not one line of the tool-use loop changed. This is the concrete proof of Theory.md's point that MCP standardizes the transport (the wire format/connection, e.g. stdio vs. HTTP) rather than the tool definition shape or the model's behavior — swapping stdio for HTTP, and a toy server for GitHub's real one, required changing exactly the connection setup and nothing else.
 
 **Running it** (see the comment block at the top of the file for full setup):
 1. `npm install @modelcontextprotocol/sdk @anthropic-ai/sdk`

@@ -159,7 +159,7 @@ A common misconception is that giving the model tools means it will always use t
                                     model may choose to call it anyway
 ```
 
-**This decision quality depends entirely on ②'s description field** — a vague description makes the model guess wrong about when to reach for a tool (covered in depth Day 2). Giving a model 3 tools and asking questions that need 0, 1, or 2 of them (this Day's experiment) is directly testing this decision-making, not just execution mechanics.
+**This decision quality depends entirely on a tool definition's description field** — the plain-language explanation of what the tool does and when to use it — and a vague description makes the model guess wrong about when to reach for a tool (covered in depth Day 2). Giving a model 3 tools and asking questions that need 0, 1, or 2 of them (this Day's experiment) is directly testing this decision-making, not just execution mechanics.
 
 ---
 
@@ -175,8 +175,9 @@ Without a registry:  every place that calls the model re-writes/re-pastes
 With a registry:      tools are registered once (name + description +
                        schema + the actual function) → any code path
                        that needs tools pulls the current definitions
-                       from one place → the execution step (③.3) also
-                       looks up the real function from the same registry,
+                       from one place → the step where your code executes
+                       the real function also looks up that function from
+                       the same registry,
                        so the description and the implementation can
                        never point to two different things
 ```
@@ -205,7 +206,8 @@ The fixed set of values:
 
 "tool_use"       model emitted a tool_use block and is pausing,
                  waiting for you to execute it and send back a result
-                 (this is the loop's continue condition in ③)
+                 (this is the continue condition for the request →
+                 execute → inject → continue loop)
 
 "max_tokens"     generation was cut off because it hit your
                  max_tokens limit mid-response
@@ -213,7 +215,7 @@ The fixed set of values:
 "stop_sequence"  generation hit a custom stop sequence you configured
 ```
 
-**Every response has exactly one of these — there is no "missing" or "no stop reason" case.** `while (response.stop_reason === "tool_use")` (the loop in ③) relies on this: the loop exits the moment `stop_reason` becomes anything else, most commonly `"end_turn"` once the model has a final answer.
+**Every response has exactly one of these — there is no "missing" or "no stop reason" case.** `while (response.stop_reason === "tool_use")` (the request → execute → inject → continue loop) relies on this: the loop exits the moment `stop_reason` becomes anything else, most commonly `"end_turn"` once the model has a final answer.
 
 **What actually CAN be hallucinated:** the *content* inside a `tool_use` block — e.g. garbled/invented arguments in `input`, or (rarer) a `name` that doesn't match any registered tool. That's a real failure mode to guard against (see the registry's `execute` throwing on an unknown tool name). `stop_reason` itself is structural metadata, not content, so it's a different category of risk entirely.
 

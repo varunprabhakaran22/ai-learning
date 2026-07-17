@@ -88,9 +88,13 @@ This is a **design doc, not a built app** — see [Still need to cover / do](#st
   for a failure"); after, to show the actual cost including output tokens, which can't be
   known until generation finishes.
 - **The results panel always shows which preset/model/temperature was used**, even when
-  auto-routing picked it — an invisible auto-decision is exactly the failure mode Day 4
-  fact `⑤` (log the routing decision) warns about, just surfaced in UI instead of a log line.
-- **Saving a new version never overwrites an old one** (Day 3 fact `③`) — the sidebar is
+  auto-routing picked it — an invisible auto-decision is exactly the failure mode Day 4's
+  warning against silent routing warns about: a router that classifies and picks a model
+  without logging *why* leaves you unable to audit whether it's making good decisions,
+  just surfaced in UI instead of a log line.
+- **Saving a new version never overwrites an old one** (Day 3's versioning rule: keep old
+  prompt versions alongside new ones, like `summarize_v1.json`/`v2.json`/`v3.json`, so you
+  can compare and roll back instead of losing history) — the sidebar is
   append-only; only versions, never edits-in-place.
 
 ## Known gaps (not built this Day)

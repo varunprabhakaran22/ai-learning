@@ -6,13 +6,13 @@
 
 **Source:** "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models" (Wei et al., 2022).
 
-Reference material, not core theory — the *concept* (CoT gives the model scratch space via its own output tokens) is in Theory.md `②`. Note here after reading:
+Reference material, not core theory — the *concept* (CoT gives the model scratch space via its own output tokens, since each reasoning step it writes becomes part of the input for predicting the next step) is core theory already covered. Note here after reading:
 
 ```
 - The actual experimental results (which model sizes showed the effect,
   how large the accuracy jump was on the benchmarks used)
 - Any caveat the paper raises about when CoT does NOT help
-  (ties back to Theory.md ② — simple lookup tasks)
+  (ties back to the fact that CoT does roughly nothing for simple lookup/fact-retrieval tasks, since they need no scratch space)
 ```
 
 *(Fill in after reading — placeholder until you've gone through the paper.)*
@@ -46,8 +46,8 @@ Task:   pick one math/logic problem type, run 10 trials each of:
 Measure: accuracy across the 10 runs per method
 
 Record: which method won, and whether the gap matches the
-        Theory.md ② prediction (CoT should help most on
-        multi-step problems, least on simple recall)
+        prediction that CoT should help most on
+        multi-step problems, least on simple recall
 ```
 
 *(Fill in after running the experiment.)*

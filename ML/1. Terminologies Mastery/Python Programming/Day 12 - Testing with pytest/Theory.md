@@ -133,7 +133,7 @@ def test_withdraw_raises_when_insufficient():
 ```
 If someone later "improves" `withdraw` and accidentally breaks the insufficient-funds check, `pytest` (run as part of the project's normal workflow, or automatically in CI — a server that runs your tests on every change, common in real teams) immediately reports a failing test, catching the regression before it reaches production — instead of relying on someone noticing the bug by hand, or worse, a user hitting it live.
 
-**Where this fits into the Day 7 workflow already covered:** a real project's `requirements.txt` typically includes `pytest` as a dependency, tests live in their own files (often a `tests/` folder, or `test_*.py` files alongside the code they test), and running `pytest` before committing/pushing (Day 7 ④'s `git commit`) is standard practice — catching breakage locally, before it's shared with anyone else via GitHub (Day 7 ⑤).
+**Where this fits into the Day 7 workflow already covered:** a real project's `requirements.txt` typically includes `pytest` as a dependency, tests live in their own files (often a `tests/` folder, or `test_*.py` files alongside the code they test), and running `pytest` before committing/pushing (Day 7's `git commit` — the deliberate snapshot taken via `git add` to stage files, then `git commit -m "message"`) is standard practice — catching breakage locally, before it's shared with anyone else via GitHub (Day 7's remote host for Git repositories, synced via `git push`/`git pull`).
 
 ---
 

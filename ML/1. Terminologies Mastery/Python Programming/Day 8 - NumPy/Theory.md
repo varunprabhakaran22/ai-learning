@@ -13,14 +13,14 @@ prices = [10, 20, 30]
 discounted = prices * 0.9        # TypeError: can't multiply sequence by non-int of type 'float'
 ```
 
-To apply `* 0.9` to every element, plain Python forces you into a loop or comprehension (Day 2, ⑥):
+To apply `* 0.9` to every element, plain Python forces you into a loop or comprehension (Day 2's `[expr for item in iterable]` list-comprehension syntax):
 ```python
 discounted = [p * 0.9 for p in prices]     # works, but this is YOU writing the loop yourself
 ```
 
 **Problem 2 — plain Python lists are slow at large scale, for a real, mechanical reason.** A Python `list` stores **pointers to separate Python objects** scattered in memory (each number is a full Python `int`/`float` object, with its own type info and overhead) — not the raw numbers packed together. Looping over a million-item list in pure Python means a million individual object lookups, each with Python-level overhead. This is a genuine performance bottleneck once your data is real-world sized (thousands to millions of values), not a hypothetical concern.
 
-**NumPy (Numerical Python)** solves both: it provides a new container type, the **array** (`ndarray`), which stores raw numbers packed contiguously in memory (like a typed array in a lower-level language) and supports **elementwise operations directly**, no loop needed — and because the actual looping happens in highly optimized C code under the hood instead of the Python interpreter, it's dramatically faster at scale. NumPy is not part of core Python — it's a package you install (`pip install numpy`, Day 7 ②) and import, universally aliased as `np` by convention:
+**NumPy (Numerical Python)** solves both: it provides a new container type, the **array** (`ndarray`), which stores raw numbers packed contiguously in memory (like a typed array in a lower-level language) and supports **elementwise operations directly**, no loop needed — and because the actual looping happens in highly optimized C code under the hood instead of the Python interpreter, it's dramatically faster at scale. NumPy is not part of core Python — it's a package you install (`pip install numpy` — Day 7's `pip`, Python's package installer matching npm) and import, universally aliased as `np` by convention:
 
 ```python
 import numpy as np
@@ -40,7 +40,7 @@ print(type(prices))         # <class 'numpy.ndarray'>
 
 `np.array(...)` converts a Python list (or nested list) into a NumPy array. Visually similar to a list when printed, but it's a genuinely different type (`ndarray`, not `list`) — Day 1's `type()` habit still applies here, and it's worth actually checking, since the two look deceptively alike printed side by side.
 
-**Now the elementwise math from ⓪ works directly, no loop:**
+**Now the elementwise math that a plain list couldn't do (`list * 0.9` failing) works directly, no loop:**
 ```python
 discounted = prices * 0.9
 print(discounted)     # [ 9. 18. 27.]
@@ -72,7 +72,7 @@ print(np.array([1,2,3]) + np.array([10,20,30]))  # [11 22 33]  — NumPy array: 
 
 ## ② Shape and dimensions — arrays beyond a single row
 
-Everything in ① used a **1D array** (a single row of numbers — think of Day 1's `[3, 7]` point-in-space idea, generalized). NumPy arrays can also be **2D** (a grid/matrix — rows and columns, like a spreadsheet) or higher, which matters immediately once you're working with real datasets (a table of data is naturally 2D: rows = records, columns = features).
+Every array shown so far (`np.array([10, 20, 30])` and the vectorized math on it) was a **1D array** (a single row of numbers — think of Day 1's `[3, 7]` point-in-space idea, generalized). NumPy arrays can also be **2D** (a grid/matrix — rows and columns, like a spreadsheet) or higher, which matters immediately once you're working with real datasets (a table of data is naturally 2D: rows = records, columns = features).
 
 ```python
 matrix = np.array([[1, 2, 3],
@@ -178,7 +178,7 @@ mask = scores > 80
 print(mask)      # [ True  True False  True False]
 ```
 
-**Step 1 — `scores > 80` is itself a vectorized operation** (①'s mechanism), just using a comparison operator instead of arithmetic — it checks the condition against *every element* and returns a new array of the same shape, filled with `True`/`False` results. `mask` is a real NumPy array of booleans, nothing hidden or magic about it.
+**Step 1 — `scores > 80` is itself a vectorized operation** (the same elementwise-application mechanism arithmetic operators use, applied here to a comparison instead), just using a comparison operator instead of arithmetic — it checks the condition against *every element* and returns a new array of the same shape, filled with `True`/`False` results. `mask` is a real NumPy array of booleans, nothing hidden or magic about it.
 
 **Step 2 — using that boolean array to index the original array** selects only the positions where `mask` is `True`:
 ```python

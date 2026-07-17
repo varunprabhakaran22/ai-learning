@@ -33,7 +33,7 @@ my_func = outer()      # my_func now holds `inner`, the function object
 print(my_func())        # "I'm defined inside outer"  — call it separately, afterward
 ```
 
-This pattern — a function defined inside another function, then returned — has no common name of its own yet at this point, but it's the exact mechanism decorators are built from. Hold onto this example; ① reuses it directly.
+This pattern — a function defined inside another function, then returned — has no common name of its own yet at this point, but it's the exact mechanism decorators are built from. Hold onto this example; the next section reuses this exact "function returns a function" pattern to build the decorator mechanism.
 
 ---
 
@@ -41,10 +41,10 @@ This pattern — a function defined inside another function, then returned — h
 
 **The problem decorators solve:** imagine you want to log every time several different functions are called, or time how long they take, or check a user is logged in before letting a function run — without rewriting that same logging/timing/checking code inside every single function. A **decorator** is a function that takes another function as input, and returns a *new* function that adds behavior around the original, without modifying the original function's own code at all.
 
-**Building it up from ⓪'s `outer`/`inner` pattern, one small step at a time:**
+**Building it up from the earlier `outer`/`inner` pattern — a function defined inside another function and then returned — one small step at a time:**
 
 ```python
-def my_decorator(func):          # takes a FUNCTION as its argument (functions are values, ⓪)
+def my_decorator(func):          # takes a FUNCTION as its argument (a function is just a value, like a number or string, that can be passed around)
     def wrapper():                 # a new function, defined INSIDE my_decorator
         print("Before the function runs")
         func()                     # call the ORIGINAL function, passed in as `func`
@@ -83,9 +83,9 @@ def say_hello():           is EXACTLY equivalent to:      def say_hello():
                                                             say_hello = my_decorator(say_hello)
 ```
 
-The name `say_hello` now points at the wrapper, permanently — every future call to `say_hello()` runs the decorated version. This is a real, common trap worth naming explicitly: **after decoration, the original undecorated function is gone (unreachable) unless you saved a separate reference to it** — `say_hello` has been reassigned to the wrapper, same as any other name reassignment (Day 1, ⓪).
+The name `say_hello` now points at the wrapper, permanently — every future call to `say_hello()` runs the decorated version. This is a real, common trap worth naming explicitly: **after decoration, the original undecorated function is gone (unreachable) unless you saved a separate reference to it** — `say_hello` has been reassigned to the wrapper, same as any other name reassignment — in Python, assignment just re-points a name to a different object, it doesn't overwrite anything in place.
 
-**Decorating a function that takes arguments** — the wrapper needs to accept and forward them, which is exactly what `*args`/`**kwargs` (Day 3, ③) are for:
+**Decorating a function that takes arguments** — the wrapper needs to accept and forward them, which is exactly what `*args`/`**kwargs` are for: `*args` gathers any number of extra positional arguments into a tuple, and `**kwargs` gathers any number of extra keyword arguments into a dict.
 
 ```python
 def my_decorator(func):

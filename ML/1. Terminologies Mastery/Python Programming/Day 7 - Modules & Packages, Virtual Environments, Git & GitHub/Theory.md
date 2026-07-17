@@ -137,7 +137,7 @@ npm install numpy-equivalent           python3 -m venv venv
 
 ## ④ Git — version control, same tool as JS projects use
 
-Git itself is **not Python-specific at all** — it's the same version control system used across virtually all software projects, JS included. Nothing here differs by language; this section exists because file/project organization (②③) and tracking a project's history (Git) belong together as "how a real project is actually run," and because it hasn't been formally covered yet in this track.
+Git itself is **not Python-specific at all** — it's the same version control system used across virtually all software projects, JS included. Nothing here differs by language; this section exists because file/project organization (organizing modules into packages, and isolating each project's dependencies in its own virtual environment) and tracking a project's history (Git) belong together as "how a real project is actually run," and because it hasn't been formally covered yet in this track.
 
 **The core mental model:** Git tracks changes to your files over time as a series of **commits** — named snapshots you create deliberately, each one capturing "the state of these files, at this point, with this message describing why."
 
@@ -172,7 +172,7 @@ git merge new-feature               # bring new-feature's commits into main
 
 ## ⑤ GitHub — a remote host for Git repositories, plus collaboration features
 
-**Git** (④) works entirely on your own computer — it doesn't require the internet at all. **GitHub** is a separate, cloud-hosted service that stores a copy of your Git repository remotely, enabling backup, sharing, and collaboration — the relationship is roughly "Git is the tool, GitHub is one particular place you can additionally send your Git history to" (GitLab and Bitbucket are direct competitors offering the same kind of hosting).
+**Git** (the version-control tool that tracks changes as a series of deliberate commits) works entirely on your own computer — it doesn't require the internet at all. **GitHub** is a separate, cloud-hosted service that stores a copy of your Git repository remotely, enabling backup, sharing, and collaboration — the relationship is roughly "Git is the tool, GitHub is one particular place you can additionally send your Git history to" (GitLab and Bitbucket are direct competitors offering the same kind of hosting).
 
 ```bash
 git remote add origin https://github.com/username/my-project.git   # link your LOCAL repo to a GitHub repo

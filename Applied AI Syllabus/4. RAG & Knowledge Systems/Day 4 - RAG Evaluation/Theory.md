@@ -73,7 +73,7 @@ Context Precision = (number of retrieved chunks judged relevant) / (total number
 
 Concretely: if `topK=5` and you retrieve 5 chunks, but only 2 of them are actually about the question asked (the other 3 are noise — maybe near-duplicate padding, or topically-adjacent-but-irrelevant chunks), Context Precision = 2/5 = 0.4.
 
-**How "relevant or not" gets judged, mechanically:** you can't hand-label this for every chunk on every run at scale, so this judgment itself is usually automated by asking an LLM (e.g. Claude) to look at the question and one retrieved chunk and answer "is this chunk relevant to answering the question? yes/no" — this is called **LLM-as-judge**, and you'll see it reused for almost every metric in this file. It isn't a separate exotic technique; it's just "use a capable LLM as the judge instead of a human," because a human judging every chunk on every pipeline run doesn't scale, same as the original problem in ⓪.
+**How "relevant or not" gets judged, mechanically:** you can't hand-label this for every chunk on every run at scale, so this judgment itself is usually automated by asking an LLM (e.g. Claude) to look at the question and one retrieved chunk and answer "is this chunk relevant to answering the question? yes/no" — this is called **LLM-as-judge**, and you'll see it reused for almost every metric in this file. It isn't a separate exotic technique; it's just "use a capable LLM as the judge instead of a human," because a human judging every chunk on every pipeline run doesn't scale, same as the original problem that a person can't manually check every RAG answer against the source documents at scale.
 
 **What a low score tells you to go fix:** your retrieval is pulling too much noise — lower `topK`, tighten your re-ranking threshold (Day 3), or your chunks are too large/unfocused (Day 2's chunk-size trade-off).
 
@@ -81,7 +81,7 @@ Concretely: if `topK=5` and you retrieve 5 chunks, but only 2 of them are actual
 
 **Question it answers:** "Did we actually get the chunk(s) that contain the true answer, or did we miss them entirely?"
 
-**Formula (conceptually):** this needs the ground-truth context (piece 4 from ②) — break the ground-truth answer down into its component claims/facts, and check whether each one is supported by SOMETHING in the retrieved context:
+**Formula (conceptually):** this needs the ground truth (the correct answer text, and ideally which chunk should have contained it) — break the ground-truth answer down into its component claims/facts, and check whether each one is supported by SOMETHING in the retrieved context:
 
 ```
 Context Recall = (number of ground-truth claims that ARE supported by retrieved context) / (total number of ground-truth claims)
@@ -111,7 +111,7 @@ Faithfulness = (number of claims in the answer supported by retrieved context) /
 
 Concretely: if Claude answers "$10/month, and this fee has been unchanged since 2019" but the retrieved context only says "$10 per month" (says nothing about 2019), the "unchanged since 2019" claim is unsupported — Claude invented it (possibly true in the real world, possibly not, but definitely not grounded in what it was given). If that's the only extra claim among 2 total, Faithfulness = 1/2 = 0.5.
 
-**Why this is scored separately from "is the answer correct":** a low-faithfulness answer is a generation/prompt bug specifically (the model ignored its instructions to only use provided context) — completely independent of whether retrieval did its job. This is precisely the "generation failure" case named in ①.
+**Why this is scored separately from "is the answer correct":** a low-faithfulness answer is a generation/prompt bug specifically (the model ignored its instructions to only use provided context) — completely independent of whether retrieval did its job. This is precisely the "generation failure" case — the pipeline fetched the right chunks, but Claude's answer didn't actually match what those chunks said.
 
 ### Answer Relevance — does the answer actually address the question that was asked?
 
@@ -139,7 +139,7 @@ You'll see "groundedness" used sometimes as a synonym for faithfulness, and some
 
 **RAGAS** (Retrieval Augmented Generation Assessment) is not a new metric — it is an open-source Python library that implements exactly the four metrics above (Context Precision, Context Recall, Faithfulness, Answer Relevance) as ready-made functions, using LLM-as-judge (typically calling GPT-4 or another strong model as the judge) under the hood for each one, so you don't hand-write the claim-extraction and judging prompts yourself.
 
-Concretely, using RAGAS looks like: you hand it your eval dataset (question, retrieved contexts, generated answer, ground truth — the exact four pieces from ②), you tell it which metrics to compute, and it returns a score 0-1 for each metric per question, plus an aggregate average across your whole eval set. This is the "framework hides the primitive, you should still understand the primitive first" pattern from Day 3's Recap — RAGAS's `faithfulness` metric is doing precisely the claim-extraction-and-LLM-judge process from ④, just packaged as one function call instead of a hand-written prompt.
+Concretely, using RAGAS looks like: you hand it your eval dataset (question, retrieved contexts, generated answer, ground truth — the exact four pieces you compare against each other for every eval question), you tell it which metrics to compute, and it returns a score 0-1 for each metric per question, plus an aggregate average across your whole eval set. This is the "framework hides the primitive, you should still understand the primitive first" pattern from Day 3's Recap — RAGAS's `faithfulness` metric is doing precisely the process of breaking the answer into claims and asking an LLM judge whether each claim is supported by the retrieved context, just packaged as one function call instead of a hand-written prompt.
 
 **Why it matters that RAGAS uses an LLM as the judge internally, and what that costs you:** every RAGAS metric call means at least one (often several) extra LLM API calls per question, purely for evaluation — this is not free, and not instant. Evaluating 200 Q&A pairs across 4 metrics can mean 800+ extra LLM calls just to generate your quality report. This is why evaluation typically runs offline/in batch (e.g. nightly, or on every pipeline-config change) rather than live on every user request — it's a testing/CI step, not a runtime step.
 

@@ -19,7 +19,7 @@
 | **GenAI (Generative AI)**                      | Umbrella term for any AI that generates content (text, code, images) rather than just classifying data                                                                                                                                             | The entire syllabus — this is the whole field                                                                                       | —                                                                                               |
 | **Agentic AI**                                 | LLM systems that plan, use tools, take multi-step actions, and pursue a goal with some autonomy (not just single-turn chat)                                                                                                                        | **Phase 3, Weeks 5–7** — Agent Architecture, Memory, Planning, Multi-Agent Orchestration                                            | —                                                                                               |
 | **Transformer**                                | A neural network architecture that processes an entire sequence at once via self-attention (every token computes relevance against every other token in parallel), instead of the older RNN approach of one-token-at-a-time with a decaying memory | Illustrated Transformer read (Wk1 D1 reference); attention internals not yet a dedicated day                                        | The engine architecture (e.g. V8) — a blueprint for the mechanism, not a specific product       |
-| **LangChain**                                  | A framework that wraps common LLM patterns (prompt templates, chains, memory, tool use) into pre-built abstractions, installed like any other package (`npm install langchain`)                                                                    | You build its internals by hand: `PromptBuilder` (Wk2 D1), `AgentMemory` (Wk5 D2), `ToolRegistry` (Wk3 D1), `Orchestrator` (Wk6 D2) | A library like Express/jQuery — code you import, not a package manager and not a hosting site   |
+| **LangChain**                                  | A framework that wraps common LLM patterns (prompt templates, chains, memory, tool use) into pre-built abstractions, installed like any other package (`npm install langchain`)                                                                    | You build its internals by hand: `PromptBuilder` (Wk2 D1), `AgentMemory` (Wk5 D2), `ToolRegistry` (Wk3 D1), `Orchestrator` (Wk6 D2) — see Wk5 D2 function-level mapping table below | A library like Express/jQuery — code you import, not a package manager and not a hosting site   |
 | **LangGraph**                                  | LangChain's graph-based orchestration layer — nodes, edges, conditional routing, cycles for agent workflows                                                                                                                                        | **Week 7, Day 4** — explicit build + comparison task                                                                                | A flowchart/state machine, vs. LangChain's straight-line assembly line                          |
 | **LangSmith**                                  | Tracing, evaluation, and regression-testing tool for LLM apps in production                                                                                                                                                                        | **Prompt Engineering as a Systems Discipline Day 3 — Prompt Versioning & Testing** (prompt testing), **Week 8** (Eval Framework, Regression Runner, Observability)                                    | A monitoring dashboard (e.g. Datadog), but for LLM calls — observes only, builds nothing        |
 | **RAG (Retrieval-Augmented Generation)**       | Making an LLM answer using YOUR documents instead of only its training data                                                                                                                                                                        | **Week 4**, entirely                                                                                                                | —                                                                                               |
@@ -37,6 +37,21 @@
 
 
 **Rule of thumb:** if you hear a new trending term mid-syllabus and can't find it above, it's almost certainly a rebrand or a specific product implementation of a concept you're already scheduled to learn — ask me and I'll map it in.
+
+### Wk5 D2 function-level mapping — `AgentMemory` (`example.js`) vs. LangChain/LangGraph
+
+The macro row above says "you build `AgentMemory` by hand instead of using LangChain." Concretely, per function:
+
+| `example.js` piece | LangChain / LangGraph equivalent | What the framework version adds over the hand-built one |
+|---|---|---|
+| `shortTerm` sliding window (`addToShortTerm`) | `ConversationBufferWindowMemory` (or LangGraph's `trimMessages`) | Same window, pre-built — pass `k` instead of writing `slice(-maxN)` |
+| `longTerm` array + `embed`/`cosineSimilarity`/`retrieveRelevant` | `VectorStoreRetrieverMemory` wrapping a real vector store (Chroma/Pinecone/Qdrant) | Same embed→store→cosine→topK loop, done by the vector store client instead of hand-rolled |
+| `summarizeSession` (auto-summarize before storing) | `ConversationSummaryMemory` / `ConversationSummaryBufferMemory` | Same "one extra LLM call to condense" pattern, auto-triggered by a token threshold instead of called manually at session end |
+| episodic vs. semantic `type` tag | Not built into LangChain itself — closer to LangGraph's `Store` API (namespaces + typed memory) or product frameworks like MemGPT/Letta (explicit archival vs. core memory split) | Nothing pre-built in LangChain proper; you'd still model this split yourself even on top of their primitives |
+| `buildPromptWithMemory` (folding retrieved memory into prompt text) | `ConversationChain` / LangGraph prompt templating, auto-injecting `memory.load_memory_variables()` | Same fold, templated instead of manual string building |
+| `runExecutorLoop` (tool_use / DONE loop) | LangGraph's prebuilt ReAct agent (`createReactAgent`), or LangChain's older `AgentExecutor` | This is the biggest one — the entire call→check-tool-call→execute→push-result→repeat loop, including max-iteration handling, is pre-written |
+
+**The one-line takeaway:** nothing here is a capability LangChain/LangGraph has that hand-written code doesn't — it's the exact same mechanism, with the boilerplate pre-written. Knowing this mapping is what lets you say, in an interview, "I know what `ConversationSummaryMemory` does under the hood because I built it" instead of just knowing the class name.
 
 **On the mental-map column:** these analogies are scaffolding for building intuition fast — never repeat them in an interview. Always lead with the "what it actually means" column; that's the real definition.
 
@@ -434,6 +449,7 @@
 #### Day 2 — Agent Memory Systems
 
 - **Theory:** 4 types of memory — in-context, external (vector), episodic (past sessions), semantic (facts). When to use each
+- **Real-world tie-in:** Claude Code's "Dreaming" (research preview, 2026) — agent reviews past session transcripts offline, writes learned playbooks/heuristics back to a memory file. Cover as a short callout: this is episodic/semantic memory consolidation, automated and shipped as a product feature — not a new mechanism beyond what this day already teaches.
 - **Read:** `"agent memory systems design"`, `"episodic memory for AI agents"`
 - **Experiment:** Run the same agent task with no memory vs in-context history vs retrieved memory. Compare coherence
 - **🏗️ Showcase Task:** Build an `AgentMemory` system
@@ -447,6 +463,7 @@
 #### Day 3 — Planning & Task Decomposition
 
 - **Theory:** How agents break complex goals into subtasks. Tree-of-thought vs linear planning. When planning fails
+- **Real-world tie-in:** Claude Code's `/goal` command (2026) — separates the ACTING model from a distinct model that judges completion (a plain-language completion condition checked by a separate, usually cheaper, model after every turn; only its "yes" ends the loop). Cover as a short callout: a concrete, shipped example of decoupling "actor" from "stopping-condition judge," which this day's stopping/replanning content otherwise only covers abstractly. Also mention Task Budgets (Opus 4.7, 2026) briefly here as a related stopping/resource-management knob (full treatment stays in Week 7 Day 3).
 - **Read:** `"task decomposition LLM agents"`, `"tree of thoughts paper"`
 - **Experiment:** Give agent a complex 5-step task. Compare: no planning vs explicit plan-first vs dynamic replanning
 - **🏗️ Showcase Task:** Build a `TaskPlanner`
@@ -490,6 +507,7 @@
 #### Day 1 — Multi-Agent Patterns
 
 - **Theory:** Orchestrator-worker, peer-to-peer, supervisor patterns. When multi-agent beats single agent. Communication protocols between agents
+- **Real-world tie-in:** Claude Code's Dynamic Workflows and Multi-Agent Orchestration (2026, both GA/beta) — a lead agent plans, decomposes a prompt, fans work out to many parallel subagents on a shared filesystem, cross-checks/refutes each other's findings, validates before returning. Cover as a short callout: this is the orchestrator-worker pattern this day teaches, scaled to tens-to-hundreds of subagents and productized — not a new architecture.
 - **Read:** `"multi-agent LLM orchestration patterns"`, `"AutoGen vs LangGraph architecture"`
 - **Experiment:** Same task: single large agent vs orchestrator + 2 specialists. Compare output quality and reliability
 - **🏗️ Showcase Task:** Document a multi-agent system design
@@ -502,6 +520,7 @@
 #### Day 2 — Orchestrator Design
 
 - **Theory:** The orchestrator's job — task routing, result aggregation, conflict resolution, failure handling
+- **Real-world tie-in:** Claude Code's Outcomes (2026, public beta) — you write a rubric for "done," and a separate grader model iterates the working agent until it passes. Cover as a short callout: a packaged self-critique/verification loop, relevant to this day's "result aggregation" and failure-handling job — the grader is effectively another orchestrator role, checking output instead of routing input.
 - **Read:** `"LLM orchestrator design patterns"`, `"agent coordination strategies"`
 - **Experiment:** Build a simple orchestrator. Intentionally make a worker fail. Observe recovery behavior
 - **🏗️ Showcase Task:** Build an `Orchestrator` class
@@ -584,6 +603,7 @@
 #### Day 3 — Cost & Latency Optimization
 
 - **Theory:** Token budgets per agent, model tiering (use cheap model for simple tasks), caching repeated calls
+- **Real-world tie-in:** Claude's Task Budgets (Opus 4.7, 2026 beta) — an advisory token budget with a running countdown so the agent self-prioritizes and wraps up gracefully instead of running until an iteration cap forcibly cuts it off. Cover as a short callout directly against this day's "token budgets per agent" theory: a shipped example of a soft, self-aware budget vs. the hard `maxIterations` backstop from Week 5.
 - **Read:** `"LLM cost optimization strategies"`, `"semantic caching AI systems"`
 - **Experiment:** Profile your multi-agent pipeline — find the most expensive calls. Optimize with caching + model tiering
 - **🏗️ Showcase Task:** Build a `CostOptimizer`

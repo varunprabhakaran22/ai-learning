@@ -30,13 +30,13 @@ print(ages)
 # dtype: int64
 ```
 
-A `Series` is a 1D array (Day 8, ①) with an explicit **label** attached to each position — called the **index** — instead of only a bare numeric position. Access by label works alongside plain positional access:
+A `Series` is a 1D array (Day 8's `np.array`, which supports elementwise vectorized math with no loop needed) with an explicit **label** attached to each position — called the **index** — instead of only a bare numeric position. Access by label works alongside plain positional access:
 ```python
 print(ages["Varun"])     # 25 — access by LABEL
 print(ages.iloc[0])        # 25 — access by POSITION (0 = first), same value here since Varun is first
 ```
 
-**`.iloc`** (integer-location) is how you deliberately ask for "position N," when you want positional access regardless of what the label happens to be — distinguishing this from plain `[ ]`, which looks up by *label* first on a `Series`. This distinction matters more once rows get reordered/filtered and position no longer matches the original label — covered concretely in ③.
+**`.iloc`** (integer-location) is how you deliberately ask for "position N," when you want positional access regardless of what the label happens to be — distinguishing this from plain `[ ]`, which looks up by *label* first on a `Series`. This distinction matters more once rows get reordered/filtered and position no longer matches the original label — a concrete trap covered below, where filtering can make `.iloc[1]` and `.loc[1]` return different rows entirely, or make `.loc` raise `KeyError`.
 
 If you don't supply an `index`, Pandas defaults to plain `0, 1, 2, ...` — behaving just like a NumPy 1D array with automatic labels:
 ```python
@@ -85,9 +85,9 @@ print(df[["name", "salary"]])
 # 2    Raj   85000
 ```
 
-**Adding a new column** works like adding a dict key (Day 2, ④) — assign directly:
+**Adding a new column** works like adding a dict key (`person["city"] = "..."` assigns a new key directly, no special method needed) — assign directly:
 ```python
-df["bonus"] = df["salary"] * 0.1     # vectorized, Day 8 ① — no loop needed
+df["bonus"] = df["salary"] * 0.1     # vectorized (elementwise, no loop needed) — same mechanism as NumPy arrays
 print(df["bonus"])    # 7000.0, 6200.0, 8500.0
 ```
 
@@ -112,7 +112,7 @@ print(named_df.loc["Priya"])          # select by the LABEL "Priya" — .iloc[1]
 # salary    62000
 ```
 
-**Why this distinction is more than a style choice — a concrete trap:** filtering a DataFrame (④) keeps each surviving row's *original* label, but their *positions* shift:
+**Why this distinction is more than a style choice — a concrete trap:** filtering a DataFrame (selecting only rows matching a boolean condition, e.g. `df[df["age"] > 25]`) keeps each surviving row's *original* label, but their *positions* shift:
 ```python
 filtered = df[df["age"] > 25]     # keeps rows for Varun (label 0) and Raj (label 2); Priya (label 1) is dropped
 print(filtered)
@@ -136,7 +136,7 @@ print(df[df["age"] > 25])
 # 2    Raj   45   85000
 ```
 
-`df["age"] > 25` produces a `Series` of `True`/`False` (a boolean mask, exactly Day 8 ④'s NumPy mechanism — a `Series` IS a labeled NumPy array underneath), and `df[mask]` keeps only the rows where that mask is `True`. **The same `&`/`|`-not-`and`/`or` rule from Day 8 applies identically here, for the identical reason** (a `Series` of many booleans can't collapse to one for Python's `and`/`or` to use):
+`df["age"] > 25` produces a `Series` of `True`/`False` (a boolean mask — exactly NumPy's masking mechanism, where a comparison like `array > value` produces a same-shaped array of booleans used to select elements, since a `Series` IS a labeled NumPy array underneath), and `df[mask]` keeps only the rows where that mask is `True`. **The same `&`/`|`-not-`and`/`or` rule from Day 8 applies identically here, for the identical reason** (a `Series` of many booleans can't collapse to one for Python's `and`/`or` to use):
 
 ```python
 print(df[(df["age"] > 25) & (df["salary"] > 65000)])

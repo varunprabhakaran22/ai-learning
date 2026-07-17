@@ -23,8 +23,8 @@ from Days 1-4 into one week-level summary, per user/engineer contrast.)*
 - `PromptBuilder` (Day 1) composes the prompt from independent pieces — context, examples, CoT, output format.
 - That composed prompt gets validated on response via `StructuredOutputParser` (Day 2) — retry with specific error feedback, up to 3 attempts.
 - Every prompt is a saved version, not an edit-in-place, and gets checked against saved test cases via the `PromptTestRunner` pattern (Day 3) — pass/fail per version is visible, not assumed.
-- `ModelRouter` (Day 4) decides standard vs reasoning model based on task classification, and that decision is always shown, never hidden — matches Day 4 fact `⑤`'s logging discipline.
-- Model switching mid-conversation (covered live, added as Day 4 fact `⑥`) works because history is stateless — same array, any model, on any call.
+- `ModelRouter` (Day 4) decides standard vs reasoning model based on task classification, and that decision is always shown, never hidden — matches Day 4's discipline of logging every routing decision (task, classification, model used, reasoning) so the router's choices can be audited later, not just its final answers.
+- Model switching mid-conversation (covered live, added on Day 4: since conversation history is just a plain message array you resend on every call, not something the model itself retains, switching models mid-conversation is only a matter of changing the `model` field on the next call) works because history is stateless — same array, any model, on any call.
 - Known gap: the Dashboard itself (Day 5's showcase) is documented as architecture only, not built — flagged, not silently skipped.
 
 ## The Overall Shift (Week 2)

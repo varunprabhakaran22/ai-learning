@@ -64,7 +64,7 @@ age: int = "thirty"     # runs FINE, no error — the annotation says int, the v
 
 ## ② Why bother, if nothing is enforced — where the real value comes from
 
-Given ⓪'s hard fact, the natural question is: what's actually gained? Two concrete, real benefits, neither of which is "runtime safety":
+Given that Python never enforces type hints at runtime, the natural question is: what's actually gained? Two concrete, real benefits, neither of which is "runtime safety":
 
 **1. Your editor/IDE reads type hints and gives you real, working autocomplete and inline error warnings** — this is the single biggest practical payoff, and it's not hypothetical; you'll feel it directly:
 ```python

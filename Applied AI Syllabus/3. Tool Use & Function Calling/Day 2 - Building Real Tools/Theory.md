@@ -19,13 +19,13 @@ Good:  readFile(path)
          name AND guess the right mode string"
 ```
 
-**Why this matters more here than in normal software design:** in regular code, a multi-purpose function is a style nitpick because the caller (a human developer) can read the source to disambiguate. The model's caller-side knowledge is *only* the name + description (Tool Use & Function Calling Day 1 — Function Calling Fundamentals, fact ②) — it never reads your implementation. Every bit of hidden logic behind a flag is a chance for it to guess wrong.
+**Why this matters more here than in normal software design:** in regular code, a multi-purpose function is a style nitpick because the caller (a human developer) can read the source to disambiguate. The model's caller-side knowledge is *only* the name and description given to it up front in the tool definition (Tool Use & Function Calling Day 1 — Function Calling Fundamentals) — it never reads your implementation. Every bit of hidden logic behind a flag is a chance for it to guess wrong.
 
 ---
 
 ## ② The Description Is the Only Interface the Model Has
 
-Day 1 established descriptions matter (Day 1 fact ④). Day 2 goes further: **the description is doing double duty** — it's not just "what does this do," it's "when should I reach for this, and when should I NOT."
+Day 1 established that the model decides whether a tool is needed at all, and that this decision quality depends entirely on the tool's description field. Day 2 goes further: **the description is doing double duty** — it's not just "what does this do," it's "when should I reach for this, and when should I NOT."
 
 ```
 Vague:    "Gets weather information."
@@ -90,8 +90,8 @@ Day 1's three tools were stubs (fake weather data, a restricted eval). Day 2's t
 
 ```
 searchWeb(query)   — real network call: can time out, rate-limit,
-                     or return no results (all need a safe failure
-                     path per ③, not a crash)
+                     or return no results (all need to fail loud with
+                     a readable error message instead of crashing)
 
 readFile(path)     — path could point outside an intended directory
                      (e.g. "../../.env") — a real tool needs to
@@ -111,7 +111,7 @@ getCurrentDate()   — no external I/O, no new risk; included as the
                      one "pure" tool in the set for contrast
 ```
 
-This isn't asking you to build production-grade sandboxing today (Week 12 covers hardening) — it's the reason Day 2 exists right after Day 1: once tools do real things, "the model can request a dangerous or wrong tool call, but nothing happens unless your code executes it" (Day 1 fact ①) stops being a purely theoretical safety note and becomes something your `fn` implementations actually have to think about.
+This isn't asking you to build production-grade sandboxing today (Week 12 covers hardening) — it's the reason Day 2 exists right after Day 1: once tools do real things, the Day 1 fact that "the model can request a dangerous or wrong tool call, but nothing happens unless your code executes it" stops being a purely theoretical safety note and becomes something your `fn` implementations actually have to think about.
 
 ---
 

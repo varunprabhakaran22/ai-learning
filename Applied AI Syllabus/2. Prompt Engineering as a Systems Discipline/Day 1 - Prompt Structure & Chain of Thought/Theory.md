@@ -86,7 +86,7 @@ The showcase task (`PromptBuilder`) reflects a specific mental model: a prompt i
 
 ```
 context          → background info the model needs but isn't the question itself
-examples          → the few-shot demonstrations (③, ④)
+examples          → the few-shot demonstrations (consistent, edge-case-covering pairs that pin output format/reliability by pattern-matching, not instruction)
 chain-of-thought  → an instruction/scaffold telling the model to reason before answering
 output format     → explicit shape constraint for the final answer (sets up Day 2)
 ```

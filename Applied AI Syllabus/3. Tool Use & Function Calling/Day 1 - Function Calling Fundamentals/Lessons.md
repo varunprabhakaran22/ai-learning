@@ -6,7 +6,7 @@
 
 **Source:** Anthropic's tool use documentation.
 
-Reference material, not core theory — the *concept* (request/execute/inject loop, tool definition anatomy) is in Theory.md `②`/`③`. Note here after reading:
+Reference material, not core theory — the *concept* (a tool definition needs a name, description, and input_schema; and the request→execute→inject→continue loop across at least two API calls) is covered in Theory.md. Note here after reading:
 
 ```
 - Exact request/response shape for tool_use and tool_result blocks
@@ -47,7 +47,8 @@ Task:   give the model 3 tools (e.g. getWeather, calculate, getCurrentDate)
           3. a question needing 2 tools in sequence
 
 Observe: does the model correctly decide when a tool is/isn't needed
-         (Theory.md ④)? Does it request tools in a sensible order
+         (it weighs the question against the tool descriptions and can
+         answer directly even when a matching tool is available)? Does it request tools in a sensible order
          when 2 are needed?
 
 Record: any case where the model called a tool it didn't need, or

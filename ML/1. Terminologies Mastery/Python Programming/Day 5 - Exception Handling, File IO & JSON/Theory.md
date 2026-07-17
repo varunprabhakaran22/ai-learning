@@ -6,7 +6,7 @@
 
 Across Days 1-2 you've directly triggered and read several real Python errors: `TypeError: unsupported operand type(s)`, `KeyError`, `TypeError: 'tuple' object does not support item assignment`. Each time, the program **stopped immediately** at that line. This section formalizes what those actually are, and gives you the tools to keep a program running *through* an expected failure, instead of crashing.
 
-**An exception is Python's mechanism for signaling "something went wrong, and normal execution cannot continue as written."** `TypeError`, `KeyError`, `NameError`, `IndexError` — these are all specific *types* of exception (matching Day 1's "everything has a type" idea — exceptions are objects too, with their own type). JS's equivalent is `throw`ing an `Error` — same core idea (something goes wrong, execution jumps away from normal flow), different keyword and mechanics, covered precisely in ①.
+**An exception is Python's mechanism for signaling "something went wrong, and normal execution cannot continue as written."** `TypeError`, `KeyError`, `NameError`, `IndexError` — these are all specific *types* of exception (matching Day 1's "everything has a type" idea — exceptions are objects too, with their own type). JS's equivalent is `throw`ing an `Error` — same core idea (something goes wrong, execution jumps away from normal flow), different keyword and mechanics, covered precisely in Python's `try`/`except` block below, which (unlike JS's catch-anything `catch`) requires naming the specific exception type you want to catch.
 
 ---
 
@@ -146,7 +146,7 @@ f.write("Hello, file!")
 f.close()          # you must remember to close it yourself
 ```
 
-**The problem:** if an exception occurs between `open()` and `f.close()`, the file never gets closed — the program crashes before reaching the cleanup line. An open file left uncleaned can lock the file from other programs, or lose buffered writes that were never flushed to disk. This is precisely the kind of "must run no matter what" situation `finally` (②) exists for — and indeed, the manual, correct version wraps it exactly that way:
+**The problem:** if an exception occurs between `open()` and `f.close()`, the file never gets closed — the program crashes before reaching the cleanup line. An open file left uncleaned can lock the file from other programs, or lose buffered writes that were never flushed to disk. This is precisely the kind of "must run no matter what" situation `finally` exists for — it runs always, whether an exception occurred or not, whether it was caught or not — and indeed, the manual, correct version wraps it exactly that way:
 
 ```python
 f = open("notes.txt", "w")
@@ -207,7 +207,7 @@ print(back_to_dict["name"])  # "Varun"
 print(type(back_to_dict))     # <class 'dict'>
 ```
 
-**`dumps`/`loads`** (with an `s`, for **s**tring) convert to/from a JSON string in memory. **`dump`/`load`** (no `s`) do the same conversion directly to/from an open file, combining ④'s file handling with JSON conversion in one call:
+**`dumps`/`loads`** (with an `s`, for **s**tring) convert to/from a JSON string in memory. **`dump`/`load`** (no `s`) do the same conversion directly to/from an open file, combining the `with open(...) as f:` file handling from above with JSON conversion in one call:
 
 ```python
 # WRITE a dict directly to a JSON file
@@ -231,7 +231,7 @@ print(type(restored["coordinates"]))    # <class 'list'>  — NOT tuple! Silentl
 ```
 This matters concretely any time you round-trip data through JSON and expect to get back exactly what you put in — you won't, for types JSON has no concept of (tuples, sets — a `set` can't be JSON-serialized at all, and raises `TypeError: Object of type set is not JSON serializable` if you try).
 
-**Combining ① and ⑤ — the realistic pattern you'll actually use:** reading a JSON file that might not exist, or might contain malformed JSON, wrapped in exception handling:
+**Combining `try`/`except` with `json.load` — the realistic pattern you'll actually use:** reading a JSON file that might not exist, or might contain malformed JSON, wrapped in exception handling:
 ```python
 try:
     with open("config.json", "r") as f:
@@ -243,7 +243,7 @@ except json.JSONDecodeError:
     print("Config file is corrupted/invalid JSON")
     config = {}
 ```
-`FileNotFoundError` is raised by `open()` itself if the path doesn't exist; `json.JSONDecodeError` is raised by `json.load()` if the file's contents aren't valid JSON — two distinct, specific exception types, each caught separately, exactly matching ①'s "name the specific exception type" rule.
+`FileNotFoundError` is raised by `open()` itself if the path doesn't exist; `json.JSONDecodeError` is raised by `json.load()` if the file's contents aren't valid JSON — two distinct, specific exception types, each caught separately, exactly matching the rule that `except` must name the specific exception type you're catching.
 
 ---
 

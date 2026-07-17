@@ -6,7 +6,7 @@
 
 **Source:** Anthropic's structured output / tool-use-for-JSON documentation.
 
-Reference material, not core theory — the *concept* (schema as shared contract, prompt-level vs code-level enforcement) is in Theory.md `②`/`③`. Note here after reading:
+Reference material, not core theory — the *concept* (a schema is a single shared definition that both instructs the model on the shape to produce and validates the response in code, and prompt-level instruction is only a bias while code-level parsing/validation is the actual enforcement) is covered in Theory.md. Note here after reading:
 
 ```
 - Anthropic-specific mechanism for forcing structured output (e.g. using
@@ -48,8 +48,10 @@ Measure: how many of the 20 responses fail to parse as valid JSON,
          (wrong type, missing field)
 
 Record: the failure-rate difference between the two conditions —
-        this is the concrete evidence for Theory.md ②'s claim that
-        prompt-level instruction alone still leaves a real failure rate
+        this is the concrete evidence for the claim that prompt-level
+        instruction alone (asking nicely, without code-level parsing/
+        validation) is a strong bias but not a guarantee, and so still
+        leaves a real failure rate
 ```
 
 *(Fill in after running the experiment.)*

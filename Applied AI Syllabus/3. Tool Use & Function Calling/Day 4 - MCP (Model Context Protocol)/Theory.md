@@ -34,7 +34,7 @@ With MCP:
 
 ## ② MCP Is a Protocol, Not a Replacement for Function Calling
 
-This is the single most common misconception, so state it directly: **MCP does not replace what you built in Day 1.** The model still only ever sees `{name, description, input_schema}` and still only ever outputs a `tool_use` block (Day 1 fact ②) — that part of the picture is completely unchanged.
+This is the single most common misconception, so state it directly: **MCP does not replace what you built in Day 1.** The model still only ever sees `{name, description, input_schema}` — the same three-part tool definition (a unique name, a plain-language description of what it does and when to use it, and a schema for its arguments) Day 1 established as everything the model is given — and still only ever outputs a `tool_use` block — that part of the picture is completely unchanged.
 
 ```
 What changes:     WHERE the {name, description, input_schema} tuple
@@ -60,7 +60,7 @@ Day 4 (MCP):
                                     different process/machine/language
 ```
 
-MCP is an answer to "where does the tool's real implementation live, and how do I ask it to run," not a new answer to "how does the model decide to use a tool." Day 1's Theory.md fact ① ("the model never executes anything, only requests") is exactly as true under MCP as it was without it.
+MCP is an answer to "where does the tool's real implementation live, and how do I ask it to run," not a new answer to "how does the model decide to use a tool." Day 1's core fact — the model never executes anything, only requests — is exactly as true under MCP as it was without it.
 
 ---
 
@@ -86,7 +86,7 @@ MCP SERVER                          MCP CLIENT
                                        (same shape as Day 1's loop)
 ```
 
-**A single server can be reused by many different clients** (①'s whole point) — a filesystem MCP server doesn't know or care if it's talking to Claude Desktop, VS Code, or your own toy script; it just answers "here are my tools" and "here's the result of running this tool" over the same protocol regardless of who's asking.
+**A single server can be reused by many different clients** (the whole reason MCP replaces N×M custom integrations with N+M, by letting one server built once be plugged into any MCP-speaking app) — a filesystem MCP server doesn't know or care if it's talking to Claude Desktop, VS Code, or your own toy script; it just answers "here are my tools" and "here's the result of running this tool" over the same protocol regardless of who's asking.
 
 **Your own code, in the Day 4 showcase task, plays BOTH roles at once**: you build a server (exposing 3 tools) AND you connect a client to it (to actually drive it with the model) — but in production, most of the time you write ONE of these roles and reuse someone else's implementation of the other (e.g. use Anthropic's filesystem server as-is, only write your own client; or write your own server and let Claude Desktop be the client).
 
@@ -94,7 +94,7 @@ MCP SERVER                          MCP CLIENT
 
 ## ④ What Actually Travels Over the Wire
 
-MCP servers and clients don't have to run in the same process — that's the entire point (①). This means the tool discovery and execution steps from Day 1 become real network/IPC messages instead of plain function calls:
+MCP servers and clients don't have to run in the same process — that's the entire point, since it's what lets one server built once be reused by any client instead of rebuilt per app. This means the tool discovery and execution steps from Day 1 become real network/IPC messages instead of plain function calls:
 
 ```
 Day 1 (in-process):        registry.getDefinitions()  → just reads a Map
@@ -149,9 +149,12 @@ Day 4 adds:        a standard WIRE PROTOCOL so tool definitions and
                     by any MCP-speaking client instead of rebuilt per
                     app. The model's behavior is UNCHANGED — it still
                     only ever requests {name, input}, same as Day 1.
-                    What's new is that "your code" (Day 1 fact ①) can
-                    now be a completely separate process talking over
-                    MCP, not just a Map in the same file.
+                    What's new is that "your code" — the thing that
+                    actually executes the real function, since the
+                    model itself never executes anything, only
+                    requests — can now be a completely separate
+                    process talking over MCP, not just a Map in the
+                    same file.
 ```
 
 ---

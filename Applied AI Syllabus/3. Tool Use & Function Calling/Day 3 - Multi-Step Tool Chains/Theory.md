@@ -52,7 +52,7 @@ Observe:  the tool's real result comes back to the model
           (repeat: Reason again, now informed by what it just observed)
 ```
 
-**Why "observe-then-reason-again" beats "plan everything upfront":** the model often can't know what to do next until it sees what a prior tool actually returned (Theory.md ①'s dependent-chaining case). A rigid up-front plan ("call tool A, then B, then C") breaks the moment tool A returns something unexpected (empty results, an error, a different ID format than assumed). ReAct's loop re-plans after every observation instead of committing to a fixed script.
+**Why "observe-then-reason-again" beats "plan everything upfront":** the model often can't know what to do next until it sees what a prior tool actually returned (the same dependent-chaining case as before: tool #2's input can depend on what tool #1 returns, so the next call can't be built until the first one comes back). A rigid up-front plan ("call tool A, then B, then C") breaks the moment tool A returns something unexpected (empty results, an error, a different ID format than assumed). ReAct's loop re-plans after every observation instead of committing to a fixed script.
 
 This is exactly what Day 1's while-loop already does structurally — Day 3 just names the pattern and asks you to reason about it explicitly as a *loop with a plan/observe cycle*, not merely "call tools until stop_reason changes."
 
@@ -112,7 +112,7 @@ Chain case (Day 3):         tool #1 fails → error text → model reads
                                   what it couldn't do
 ```
 
-This only works because Day 2's failure mode was already "loud but non-crashing" — a mid-chain crash would kill the whole loop with no chance for the model to recover. The `MAX_ITERATIONS` cap (③) is also what prevents case (a) from becoming an infinite retry loop if the tool keeps failing.
+This only works because Day 2's failure mode was already "loud but non-crashing" — a mid-chain crash would kill the whole loop with no chance for the model to recover. The `MAX_ITERATIONS` cap (the hard iteration ceiling, checked independently of `stop_reason`, that forces a graceful exit instead of an unbounded loop) is also what prevents case (a) from becoming an infinite retry loop if the tool keeps failing.
 
 ---
 

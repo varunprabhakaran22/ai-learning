@@ -91,7 +91,7 @@ if still failing after the cap → stop retrying, surface a clear error
 
 ## ⑤ JSON vs XML Tags — Same Goal, Different Shape
 
-Both exist to solve ①'s problem (machine-parseable output), but suit different needs:
+Both exist to solve the problem of producing machine-parseable output that code can consume without breaking on prose variation, but suit different needs:
 
 ```
 JSON:      best when the output IS the data you want to use directly —

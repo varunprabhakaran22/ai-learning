@@ -31,7 +31,7 @@
 - A tricked/careless prompt causing `fetchURL("http://169.254.169.254/latest/meta-data/")` (cloud metadata endpoint) or `fetchURL("http://localhost:6379")` (internal service) is **SSRF (Server-Side Request Forgery)** — a named, specific vulnerability class, not a decision-quality issue. A better tool description does NOT fix this — the model can still be asked directly to fetch that exact string, and the tool has no way to "know" an IP is dangerous from a description.
 - Real defenses live in the tool's own code, not the prompt: (1) **allowlist/blocklist at the network layer** — reject requests to private IP ranges (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), loopback (127.0.0.1/localhost), and cloud metadata IPs (169.254.169.254) before the request is made; (2) **least-privilege network egress** — run tool execution with restricted outbound access (only public HTTPS, internal subnets blocked at the firewall/sandbox level) so even a bad URL that slips past the code-level check gets refused at the network.
 
-## Full request → response trace (see Day 1 Theory.md fact ③ for the diagram)
+## Full request → response trace (the Day 1 "Request, Execute, Inject, Continue" loop — send message + tools, model returns a tool_use block, your code executes the real function, the result is injected back as a tool_result, model reads it and responds)
 - Raw tool results never go straight to the user — they go back to the model first, which converts raw JSON/data into a natural-language answer. Only that final text is displayed.
 - This is why it's a loop of at least 2 API calls: call #1 gets the tool_use request, call #2 gets the human-readable answer.
 

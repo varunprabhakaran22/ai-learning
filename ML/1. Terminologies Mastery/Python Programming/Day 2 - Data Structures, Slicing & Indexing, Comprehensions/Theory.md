@@ -41,7 +41,7 @@ Common operations, matched against their JS equivalents:
 | `"banana" in fruits`      | `arr.includes("banana")`               | membership check, returns `bool`                           |
 
 
-**One real Python-specific trap: lists can hold mixed types in the same list** (`[1, "two", 3.0, True]` is completely legal), same as JS arrays — no surprise there. The surprise is on the *assignment* model, not the list itself: because Python names are bindings to objects (Day 1, ⓪), two variables can point at the **same** list object:
+**One real Python-specific trap: lists can hold mixed types in the same list** (`[1, "two", 3.0, True]` is completely legal), same as JS arrays — no surprise there. The surprise is on the *assignment* model, not the list itself: because a Python variable is a name bound to an object elsewhere in memory rather than a box holding a value (so assignment re-points the name instead of copying the value), two variables can point at the **same** list object:
 
 ```python
 a = [1, 2, 3]
@@ -50,7 +50,7 @@ b.append(4)
 print(a)           # [1, 2, 3, 4]  — a changed too! Same object, two names.
 ```
 
-This matches JS's array/object reference-assignment behavior exactly (`let b = a` in JS has the identical trap) — it's not new to Python, just worth confirming it carries over. To actually copy a list, use `b = a.copy()` or `b = a[:]` (a full slice — explained in ③).
+This matches JS's array/object reference-assignment behavior exactly (`let b = a` in JS has the identical trap) — it's not new to Python, just worth confirming it carries over. To actually copy a list, use `b = a.copy()` or `b = a[:]` (a full slice — omitting both start and stop indices, which copies every item into a new list object).
 
 ---
 
@@ -93,7 +93,7 @@ print(fruits[-1])    # 'date'   — JS equivalent would be arr[arr.length - 1]
 fruits[1:3]      # ['banana', 'cherry']  — index 1 up to (NOT including) index 3
 fruits[:2]       # ['apple', 'banana']   — omit start = "from the beginning"
 fruits[2:]       # ['cherry', 'date']    — omit stop  = "to the end"
-fruits[:]        # a full COPY of the list — this is the a[:] copy trick from ①
+fruits[:]        # a full COPY of the list — the standard way to copy a list instead of just re-pointing to the same object
 fruits[::2]      # ['apple', 'cherry']   — step of 2: every other item
 fruits[::-1]     # ['date', 'cherry', 'banana', 'apple']  — step -1: REVERSED
 ```
@@ -152,7 +152,7 @@ email = person.get("email", "not provided")
 person.keys()      # dict_keys(['name', 'age', 'city'])    — like Object.keys(obj)
 person.values()    # dict_values(['Varun', 30, 'Bangalore']) — like Object.values(obj)
 person.items()     # dict_items([('name','Varun'), ('age',30), ('city','Bangalore')])
-                    # — like Object.entries(obj), pairs come back as tuples (②)
+                    # — like Object.entries(obj), pairs come back as tuples (ordered, immutable pairs)
 ```
 
 **Looping over a dict's pairs** — another spot with a classic vs. idiomatic split you'll see constantly in real code (e.g. iterating a model's hyperparameter dict, a dataset's column stats):
@@ -163,7 +163,7 @@ for key in person.keys():
     print(key, person[key])
 
 # idiomatic — .items() unpacks each pair directly into two names via
-# tuple unpacking (the "two variables at once" pattern from ②'s tuples)
+# tuple unpacking (assigning each item of an ordered group of values to its own variable in one line)
 for key, value in person.items():
     print(key, value)
 ```
@@ -280,7 +280,7 @@ any(len(word) > 10 for word in words)    # True  — "hippopotamus" qualifies
 all(len(word) > 10 for word in words)    # False — most words don't qualify
 ```
 
-**The argument passed in — `len(word) > 10 for word in words` — is called a generator expression.** It's the exact same `for`/`if` shape as a list comprehension (⑥), but written with `( )` instead of `[ ]`, and critically, it does **not** build an actual list in memory first. Instead, it produces items one at a time, on demand, as `any()`/`all()` ask for the next one — and both functions **stop early** the moment they already know the answer:
+**The argument passed in — `len(word) > 10 for word in words` — is called a generator expression.** It's the exact same `for`/`if` shape as a list comprehension (an expression, then a `for` clause, then an optional `if` filter), but written with `( )` instead of `[ ]`, and critically, it does **not** build an actual list in memory first. Instead, it produces items one at a time, on demand, as `any()`/`all()` ask for the next one — and both functions **stop early** the moment they already know the answer:
 
 ```
 any(...) stops the INSTANT it finds one True  → doesn't check the rest

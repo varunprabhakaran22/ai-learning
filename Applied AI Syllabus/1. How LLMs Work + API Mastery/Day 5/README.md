@@ -64,7 +64,7 @@ sliding-window history, and per-session cost estimation.
 - **Presets carry a `reason` field.** Not just tuned numbers — each preset states *why*
   that temperature/top_p combination fits the use case, per the syllabus requirement.
 - **Token counting runs locally before every call**, using the same tokenizer the API
-  uses (Day 4, `③`) — this is what makes sliding-window trimming possible without
+  uses, so exact counts are known before sending instead of estimated (Day 4) — this is what makes sliding-window trimming possible without
   guessing.
 - **Cost is an estimate, not a bill.** `PRICE_PER_MTOK` is hardcoded from a
   point-in-time check — real pricing should be looked up before trusting this number
@@ -74,8 +74,8 @@ sliding-window history, and per-session cost estimation.
 
 - No rate-limit handling (no retry/backoff on 429s) — flagged as a real gap during
   Day 4, still not implemented.
-- No summarization fallback — sliding window only. Summarization is a later-week
-  topic (see Day 4 Theory `④`).
+- No summarization fallback — sliding window only. Summarization (compressing dropped
+  history into a short summary instead of discarding it) is a later-week topic (see Day 4 Theory).
 
 ## Run it
 

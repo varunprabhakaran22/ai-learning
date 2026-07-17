@@ -24,7 +24,7 @@ User asks: "What's our refund policy for Plan A?"
 
 **So the entire question Day 1 answers is: "given 10,000 stored pieces of text, how do I quickly find the 3 that are actually relevant to a query?"** Everything below — embeddings, vectors, cosine similarity, vector databases — exists purely as the answer to that one search problem. Keep re-anchoring to this if any later section feels abstract: it's all in service of "find the relevant paragraph, fast."
 
-**Why not just use `Ctrl+F` / SQL `LIKE` for this?** Because exact/keyword matching fails the moment the user's wording doesn't match the document's wording — asking "how do I get a refund" won't find a paragraph that says "reimbursement process," even though it's the exact right answer. Solving THIS specific gap is what embeddings are for (② below).
+**Why not just use `Ctrl+F` / SQL `LIKE` for this?** Because exact/keyword matching fails the moment the user's wording doesn't match the document's wording — asking "how do I get a refund" won't find a paragraph that says "reimbursement process," even though it's the exact right answer. Solving THIS specific gap is what embeddings are for — turning text into vectors (via a neural net trained so that semantically similar text lands near each other in space) so that "refund" and "reimbursement" can be found as close even with zero shared letters.
 
 ---
 
@@ -48,7 +48,7 @@ Strip away "AI" for a second. A **vector**, in the plain math sense, is just a l
 
 Two points that are physically close together on that graph (e.g. `[3, 7]` and `[3.2, 6.9]`) are "similar" in an obvious, visual sense — small distance between them. Two points far apart (`[3, 7]` and `[20, 1]`) are "different." **This is the entire intuition the rest of Day 1 rests on** — everything from here on is this exact same idea, just with more numbers per point than 2, and applied to text instead of arbitrary dots.
 
-**Why more than 2-3 numbers?** Because "meaning" has more independent aspects than a flat 2D graph can capture — topic, tone, formality, sentiment, subject matter, and hundreds of other learned aspects, each roughly corresponding to one number ("dimension") in the vector. A vector with 1536 numbers is a point in a 1536-dimensional space — impossible to literally draw, but mathematically no different from the 2D dot above: it's still just "a list of numbers representing a point," and "closeness between two points" is still a well-defined, computable thing (③ makes this exact).
+**Why more than 2-3 numbers?** Because "meaning" has more independent aspects than a flat 2D graph can capture — topic, tone, formality, sentiment, subject matter, and hundreds of other learned aspects, each roughly corresponding to one number ("dimension") in the vector. A vector with 1536 numbers is a point in a 1536-dimensional space — impossible to literally draw, but mathematically no different from the 2D dot above: it's still just "a list of numbers representing a point," and "closeness between two points" is still a well-defined, computable thing — measured via cosine similarity, the angle between two vectors, computed as their dot product divided by the product of their magnitudes.
 
 ---
 
@@ -77,7 +77,7 @@ That's it — the "embedding" is nothing but the output array. Not a metaphor, n
 
 ## ③ Measuring "Closeness" Between Two Vectors — Cosine Similarity, the Actual Formula
 
-Once text is turned into points (②), "find similar text" becomes "find points that are close together" — a concrete, computable geometry problem, not a vague AI concept. The standard way embedding search measures "close" is **cosine similarity**: the cosine of the angle between two vectors.
+Once text is turned into points via embedding (feeding it through a neural net trained to place semantically similar text near each other in vector space), "find similar text" becomes "find points that are close together" — a concrete, computable geometry problem, not a vague AI concept. The standard way embedding search measures "close" is **cosine similarity**: the cosine of the angle between two vectors.
 
 ```
 cosine_similarity(A, B) = dot(A, B) / (|A| * |B|)
@@ -91,9 +91,9 @@ Result range: -1 to 1
  -1  → vectors point in exactly opposite directions
 ```
 
-**Why angle, not straight-line distance?** Straight-line distance would be thrown off by vector *length* — a longer sentence might naturally produce a "bigger" vector (larger magnitude) even when it's about the exact same topic as a shorter one. Cosine similarity deliberately ignores magnitude (that's what dividing by `|A| * |B|` does) and measures only *direction* — which is what actually correlates with the learned "meaning" from ②'s training process. In practice, embedding models are trained specifically so that this direction-only comparison works well; scores for genuinely related text typically land in a narrow positive band (commonly ~0.7-0.95), not spread evenly across -1 to 1.
+**Why angle, not straight-line distance?** Straight-line distance would be thrown off by vector *length* — a longer sentence might naturally produce a "bigger" vector (larger magnitude) even when it's about the exact same topic as a shorter one. Cosine similarity deliberately ignores magnitude (that's what dividing by `|A| * |B|` does) and measures only *direction* — which is what actually correlates with the learned "meaning" from the embedding model's contrastive training process (where similar-meaning pairs are pulled together and unrelated pairs pushed apart). In practice, embedding models are trained specifically so that this direction-only comparison works well; scores for genuinely related text typically land in a narrow positive band (commonly ~0.7-0.95), not spread evenly across -1 to 1.
 
-**Concrete worked example, connecting straight back to ⓪'s actual problem:**
+**Concrete worked example, connecting straight back to the original problem of finding relevant text even when the user's wording differs from the document's wording:**
 
 ```
 Query:  "How do I get a refund?"
@@ -108,7 +108,7 @@ KEYWORD search (matches shared words/tokens):
 
 SEMANTIC search (cosine similarity between embeddings):
   embed("refund") lands geometrically NEAR embed("reimbursement") —
-  purely because contrastive training (②) pulled synonymous concepts
+  purely because contrastive training pulled synonymous concepts
   close together, nothing to do with shared letters
     → Doc A scores HIGH (correct), Doc B scores LOWER
 ```
@@ -121,7 +121,7 @@ This is the concrete mechanism behind "semantic search beats keyword search" —
 
 ## ④ Why You Need a "Vector Database" at All — the Scale Problem
 
-Everything in ③ works perfectly with 5 documents: embed all 5, embed the query, compute cosine similarity against each of the 5, sort, done. The problem is scale: real systems have thousands to millions of stored chunks, and comparing a query against *every single one* every time (a brute-force scan) gets slow.
+Computing cosine similarity (the angle-based closeness formula) against every stored vector works perfectly with 5 documents: embed all 5, embed the query, compute cosine similarity against each of the 5, sort, done. The problem is scale: real systems have thousands to millions of stored chunks, and comparing a query against *every single one* every time (a brute-force scan) gets slow.
 
 ```
 Brute force (comparing against every stored vector):
@@ -142,7 +142,7 @@ A vector database's actual job:
 
 **Why this makes the result "approximate," not exact:** the greedy walk can get stuck exploring one region of the graph and completely miss a true best match that happens to sit in a different, unexplored region. This is a deliberate, tunable trade-off — more graph connections per node = higher accuracy but slower search and more memory; fewer connections = faster but occasionally wrong. This is precisely what "ANN" stands for — **Approximate Nearest Neighbor** — as opposed to guaranteed-exact nearest neighbor (which is what brute force gives you, just slowly).
 
-**Concretely, what the showcase task is asking you to do:** call `chroma.query(queryVector, topK)` (or Qdrant's equivalent) and the library runs this exact HNSW graph walk internally — it is not a black box magic trick, it's this specific graph-traversal algorithm, doing the same cosine-similarity comparison from ③, just against a small smart subset of vectors instead of all of them.
+**Concretely, what the showcase task is asking you to do:** call `chroma.query(queryVector, topK)` (or Qdrant's equivalent) and the library runs this exact HNSW graph walk internally — it is not a black box magic trick, it's this specific graph-traversal algorithm, doing the same angle-based cosine-similarity comparison used in brute-force search, just against a small smart subset of vectors instead of all of them.
 
 ---
 

@@ -23,7 +23,7 @@ it = iter(numbers)            # iter() asks it to PRODUCE an ITERATOR — a sepa
 print(it)                      # <list_iterator object at 0x...>  — a genuinely different object from `numbers`
 ```
 
-**The iterator itself is driven by a second built-in function, `next()`** (you already used this exact function directly on generators, Day 4, ②) **— calling it repeatedly is the entire mechanism a `for` loop is built on:**
+**The iterator itself is driven by a second built-in function, `next()`** (you already used this exact function directly on generators, Day 4 — calling `next()` on a generator resumes it right after its last `yield`, running until the next `yield` or raising `StopIteration` when the function body finishes) **— calling it repeatedly is the entire mechanism a `for` loop is built on:**
 ```python
 print(next(it))     # 10
 print(next(it))     # 20
@@ -74,7 +74,7 @@ for n in counter:
 
 ## ② Context managers — what `with` is actually doing, `__enter__`/`__exit__`
 
-Day 5 ④ established that `with open(...) as f:` guarantees the file closes, exception or not, and named `__enter__`/`__exit__` without showing them. Here's the actual mechanism, directly parallel to ①'s structure — two magic methods define the contract, and `with` is just automated calling of them.
+Day 5 established that `with open(...) as f:` guarantees the file closes, exception or not, and named `__enter__`/`__exit__` without showing them. Here's the actual mechanism, directly parallel to the iterator protocol's structure above (a `for` loop working via a matched pair of magic methods, `__iter__`/`__next__`) — two magic methods define the contract, and `with` is just automated calling of them.
 
 ```python
 class Timer:
@@ -109,7 +109,7 @@ with Timer() as t:              is EXACTLY equivalent to:
 
 **The three parameters `__exit__` always receives** (`exc_type`, `exc_value`, `traceback`) describe whatever exception occurred inside the `with` block, if any — all three are `None` if the block finished with no exception at all. Returning `True` from `__exit__` tells Python "I've handled this exception, don't propagate it further" (suppressing it); returning `False` (or nothing, which defaults to `None`/falsy) lets any exception continue on normally after cleanup runs — the file example above returns `False`, meaning a `with open(...) as f:` block that hits an exception still closes the file, but the exception itself still surfaces to you afterward, exactly as Day 5 described.
 
-**A shortcut worth knowing exists, without needing full depth here:** the standard library's `contextlib.contextmanager` decorator (Day 4's decorator mechanism, reused again) lets you write a context manager as a single generator function (using `yield` once, Day 4's ②) instead of a full class with two magic methods — the same "there's a class-based way and a simpler generator/decorator-based shortcut" relationship ①'s generators had to manually-written `__iter__`/`__next__`.
+**A shortcut worth knowing exists, without needing full depth here:** the standard library's `contextlib.contextmanager` decorator (Day 4's decorator mechanism, reused again) lets you write a context manager as a single generator function (using `yield` once) instead of a full class with two magic methods — the same "there's a class-based way and a simpler generator/decorator-based shortcut" relationship a Day-4-style generator function has to a manually-written `__iter__`/`__next__` pair.
 
 ---
 
@@ -130,9 +130,9 @@ ruff check my_script.py
 ```
 `ruff` is the modern, much faster choice (written in Rust) that's rapidly become the standard replacement for the older `flake8` in real projects — worth recognizing both names, since you'll encounter either in existing codebases.
 
-**`mypy` — the type checker previewed in Day 11, ②.** Scans your code against its type hints and reports mismatches — a third, independent category of check (types), separate from both formatting and general linting.
+**`mypy` — the type checker previewed in Day 11** (a separate, optional step you run yourself, never automatic — Python's own interpreter never enforces type hints at runtime). Scans your code against its type hints and reports mismatches — a third, independent category of check (types), separate from both formatting and general linting.
 
-**How these fit together in a real project, tying directly to Day 7's Git workflow:** it's standard practice to run `black`/`ruff`/`mypy` **before** committing (Day 7 ④), often automated via a **pre-commit hook** — a script Git runs automatically right before a commit is finalized, which can block the commit entirely if linting/formatting fails. This is the concrete mechanism that keeps an entire team's codebase consistently styled and free of a whole category of careless mistakes, without relying on every single person remembering to run these tools manually every time.
+**How these fit together in a real project, tying directly to Day 7's Git workflow:** it's standard practice to run `black`/`ruff`/`mypy` **before** committing (Day 7's `git add`-then-`git commit` step), often automated via a **pre-commit hook** — a script Git runs automatically right before a commit is finalized, which can block the commit entirely if linting/formatting fails. This is the concrete mechanism that keeps an entire team's codebase consistently styled and free of a whole category of careless mistakes, without relying on every single person remembering to run these tools manually every time.
 
 ---
 

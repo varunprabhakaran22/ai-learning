@@ -1,6 +1,6 @@
 # Day 14 Recap — asyncio / async-await in Depth
 
-## The core rule (builds on Day 0 ⑦)
+## The core rule (builds on Day 0's point that Python is synchronous/blocking by default — no event loop exists until you explicitly `asyncio.run(...)`, unlike JS where the browser/Node event loop is always running automatically)
 
 - `asyncio` only helps **I/O-bound** work (waiting on network/disk/timers) — never **CPU-bound** work (constant computation). A single thread can't compute two things at once, `async` or not.
 - **From our discussion:** JS has the identical limitation — an `async function` full of pure computation (no real `await` points) still freezes the whole browser tab/Node process, exactly like Python. Genuine CPU-bound parallelism needs a heavier mechanism in both languages: Web Workers/Worker Threads in JS, `multiprocessing` in Python (Python additionally has the GIL, preventing true multi-core parallelism via plain threads — a wrinkle JS doesn't have).

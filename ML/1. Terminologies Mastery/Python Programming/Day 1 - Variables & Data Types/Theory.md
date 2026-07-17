@@ -55,7 +55,7 @@ Just like JS distinguishes `number`, `string`, `boolean`, etc., Python distingui
 | Decimal numbers | `float` | `x = 5.0` | `number` (same type as above in JS) |
 | Text | `str` | `x = "hello"` | `string` |
 | True/false | `bool` | `x = True` | `boolean` |
-| "Nothing"/absence | `None` | `x = None` | `null` (closest match — see ③ for the `undefined` nuance) |
+| "Nothing"/absence | `None` | `x = None` | `null` (closest match — Python has no separate `undefined`; an unassigned name simply doesn't exist and raises `NameError`) |
 
 You can always ask Python what type a value currently is with the built-in `type()` function:
 

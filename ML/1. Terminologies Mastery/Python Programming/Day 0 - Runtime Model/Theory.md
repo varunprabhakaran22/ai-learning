@@ -66,7 +66,7 @@ source code (example.py)
 
 ## ④ The hidden middle step: bytecode — why Python isn't a *pure* line-by-line interpreter either
 
-The honest picture is slightly more layered than "interpreter reads raw text and executes it directly," and this matters because the same nuance is true of JavaScript, which is the bridge to ⑤.
+The honest picture is slightly more layered than "interpreter reads raw text and executes it directly," and this matters because the same nuance is true of JavaScript, whose engines (like V8) also parse to an intermediate bytecode form before executing it.
 
 When you run a `.py` file, `python3` doesn't execute your literal source text character-by-character. It first does a **quick compile step internally**: it translates your source into **bytecode** — a simplified, lower-level instruction set that is *still not* raw CPU machine code, but is much faster for the next stage to work through than raw text would be. Then a component inside the same `python3` program, the **Python Virtual Machine (PVM)**, executes that bytecode, instruction by instruction, live.
 
@@ -110,7 +110,7 @@ This exact two-stage shape (parse/compile to an intermediate form → then execu
 
 ## ⑥ Why an uncaught error halts execution *at that line* instead of undoing everything before it
 
-This follows directly from ③ and ④, and it's the same behavior in both Python and JS, for the same underlying reason.
+This follows directly from how interpreted languages translate and execute live, piece by piece, on every run rather than producing a finished binary up front, and from Python specifically compiling to bytecode internally and having the PVM execute it live rather than all at once — and it's the same behavior in both Python and JS, for the same underlying reason.
 
 ```python
 print("this runs")      # executes, prints, done — this already happened
@@ -118,7 +118,7 @@ print(1 / 0)             # ZeroDivisionError — interpreter halts HERE
 print("this never runs") # never reached
 ```
 
-Because execution is happening live, statement by statement (③), whatever ran *before* the error already had its real-world effects — text already printed to your terminal, a variable already assigned, a file already written — and those effects are not undone when a later line fails. The interpreter simply stops progressing at the point of the uncaught error. This is a direct consequence of there being no separate all-or-nothing compilation pass: contrast this with ②'s compiled languages, where an error found during compilation means the compiler refuses to produce a binary at all, so *nothing* runs, not even the parts that were fine — because in that world, translation is a separate step that fully completes or fully fails *before* any execution begins.
+Because execution is happening live, statement by statement, whatever ran *before* the error already had its real-world effects — text already printed to your terminal, a variable already assigned, a file already written — and those effects are not undone when a later line fails. The interpreter simply stops progressing at the point of the uncaught error. This is a direct consequence of there being no separate all-or-nothing compilation pass: contrast this with compiled languages like C or Rust, where an error found during compilation means the compiler refuses to produce a binary at all, so *nothing* runs, not even the parts that were fine — because in that world, translation is a separate step that fully completes or fully fails *before* any execution begins.
 
 This is exactly the same reason a `console.log("before")` followed by an uncaught `throw` in a synchronous JS script still shows "before" in your DevTools console — the error doesn't retroactively un-print anything that already ran.
 
@@ -208,7 +208,9 @@ Side by side with what you already know from JS:
 ⑥  An uncaught error halts execution AT THAT LINE, not retroactively —
    because execution already happened live, statement by statement,
    for everything before it. True in both Python and JS, for the
-   same underlying reason (③).
+   same underlying reason: both are interpreted languages that
+   translate and execute live, piece by piece, rather than compiling
+   the whole file upfront.
 
 ⑦  JS is async-by-default only because the browser/Node ALWAYS runs
    an event loop underneath it. Python is sync/blocking by default —

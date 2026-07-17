@@ -6,7 +6,7 @@
 
 You've already used `if`/`elif`/`else` and `for` loops in Day 1-2 without a formal introduction, since Day 1's scope discussion needed them. This section closes that gap properly and covers what's actually different from JS, rather than re-teaching what you already do correctly.
 
-**`if` / `elif` / `else`** — same logic as JS's `if`/`else if`/`else`, different keyword for the middle case (`elif`, not `else if`) and colon+indentation instead of `{ }` (Day 1, ⓪):
+**`if` / `elif` / `else`** — same logic as JS's `if`/`else if`/`else`, different keyword for the middle case (`elif`, not `else if`) and colon+indentation instead of `{ }` (recall from Day 1 that an `if`/`for`/`while` body doesn't create its own scope in Python, unlike JS's block-scoped `{ }`):
 
 ```python
 age = 20
@@ -85,7 +85,7 @@ function greet(name) {                def greet(name):
 }
 ```
 
-**`return` behaves identically to JS** — it immediately exits the function and hands back a value to whoever called it. **If a Python function has no `return` statement at all, it implicitly returns `None`** (not `undefined` like a JS function without a `return` — Python's single "nothing" value from Day 1, ③, applies here too):
+**`return` behaves identically to JS** — it immediately exits the function and hands back a value to whoever called it. **If a Python function has no `return` statement at all, it implicitly returns `None`** (not `undefined` like a JS function without a `return` — `None` is Python's single, deliberate "nothing" value, collapsing what JS splits into `null` and `undefined`, and it applies here too):
 
 ```python
 def no_return():
@@ -179,7 +179,7 @@ example("must-have", 1, 2, extra="value")
 
 ## ④ Function scope — completing Day 1's scope discussion
 
-Day 1 (⓪) established that only `def` creates a new scope, unlike `if`/`for`/`while`. Here's the precise mechanic, now that you can actually write functions to test it against.
+Day 1 established that only `def` creates a new scope, unlike `if`/`for`/`while`. Here's the precise mechanic, now that you can actually write functions to test it against.
 
 ```python
 x = 10          # module-level (global) scope

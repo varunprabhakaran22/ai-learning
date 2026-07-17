@@ -61,7 +61,7 @@ A hook doesn't replace `registry.execute` — it wraps around it. The tool's rea
 
 ## ③ The Core Value: Decoupling, Not New Capability
 
-Everything a hook does, you could technically write inline inside `execute()` itself. The reason to use a hook instead is separation of concerns — the same instinct as Day 1's registry (①'s "one source of truth"):
+Everything a hook does, you could technically write inline inside `execute()` itself. The reason to use a hook instead is separation of concerns — the same instinct as Day 1's registry (tools registered once in one central place so the description and implementation can never drift apart — "one source of truth"):
 
 ```
 Without a hook:    execute() itself grows a pile of unrelated
