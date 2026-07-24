@@ -1,0 +1,30 @@
+# Day 4 Recap — Human-in-the-Loop Patterns
+
+## Why neither blanket rule works
+"Ask a human before every action" defeats the point of an autonomous agent and degrades human judgment over time (every request looks the same regardless of real risk, so a human reviewing many of them starts rubber-stamping without reading). "Never ask" is fine for read-only/cheap actions but means the first time an irreversible action is wrong, there's no recovery — Day 3's replanning only reacts to a real result, but for an irreversible action the "real result" IS the damage, arriving too late. Fix: classify actions upfront by risk, gate only the ones that need it — same principle as Day 3's under-specification fix (decide granularity/actionability at design time, not ad hoc mid-run).
+
+## The three risk tiers
+A property of the TOOL (assigned once, at registration time — same place Week 3 Day 1's `ToolRegistry` already declares name/description/input schema), decided by a human designing the system, never by the model at runtime.
+- **Always-ask:** irreversible or real-world-consequential if wrong (`sendMessage` to a real customer, `deleteRecord`, `chargePayment`). Test: if this runs and turns out wrong, can anything undo it? If no — always-ask, regardless of the model's stated confidence.
+- **Never-ask:** read-only or fully, trivially reversible with no side effects (`searchWeb`, `readFile`, `getAccountStatus`). Test: does running this change anything in the real world, or only produce information?
+- **Threshold-based:** reversible-ish or low-but-nonzero cost, where whether to gate depends on the model's per-call CONFIDENCE, not just the action's identity (`writeFile` overwriting an existing file, `sendMessage` to an internal channel).
+
+## Where confidence comes from, and why it's untrusted for always-ask
+Confidence is not a number the model spontaneously reports — it's explicitly requested in the output schema, same structured-output mechanism as any other field (a `confidence: 0-100` + justification alongside the tool call). It's a self-reported heuristic proxy for how ambiguous the decision felt, not a certified probability — a model can be miscalibrated (falsely confident or falsely unsure), the same reliability gap Day 3 flagged for the acting model's own self-reported task completion. This is exactly why always-ask actions skip the confidence check entirely: for irreversible actions, no self-reported number — high or low — is trusted, because being wrong is too costly to gate on a number the deciding model produced about itself.
+
+## Where the gate sits in the executor loop
+Exactly one insertion point: between "model decided an action" and "your code executes that action" — nowhere else. On an always-ask tool, the gate always pauses regardless of confidence. On a threshold-tier tool, it pauses only if the reported confidence falls below a human-set threshold for that action. A human then approves / rejects / edits-and-approves. A rejection is NOT a dead end — it re-enters the loop as a new real result, using the identical mechanism Day 3 used for a failed tool call triggering a replan (the next prompt gets built from "human rejected this action: [reason]," same as any other real, just-returned outcome).
+
+**From our discussion:** the gate only ever fires around TOOL/code execution (API calls, DB writes, any real side effect) — never around the LLM call itself. An LLM call, by itself, has no real-world side effect; it just predicts tokens and returns text/JSON (Week 1's stateless, structured-prompt-in/structured-text-out fact, still true here). The risk this day protects against — irreversibility, real-world consequence, cost — only exists at the point a tool touches the outside world, which is why the tier question ("does this change anything in the real world") is asked about the tool, not the reasoning step before it. Nuance: even never-ask actions are still tool calls, just ones with nil real-world effect — the boundary isn't "LLM vs. tools get tiers," it's "every tool gets a tier, and the LLM call is never itself a gate point because it never has the side effect."
+
+## Cost gates — a third, independent trigger axis
+Distinct from risk tier and per-call confidence: a running SESSION-level counter (total spend, or call count) that your code maintains, checked against a human-set threshold before each action executes, regardless of that action's own risk tier. A cheap, high-confidence, low-risk action can still trip a cost gate purely because the session's cumulative spend crossed a limit — the gate has nothing to do with whether THIS call is risky or uncertain. Protects against a different failure mode than risk/confidence gates: not "this one action might be wrong" but "this session, in aggregate, is burning more resources than intended."
+
+## Why every intervention gets logged
+A rejection pattern on one action (e.g. rejected 8/10 times) is the concrete signal that its tier or threshold was set wrong — without a durable log, each rejection is seen once, in isolation, and the miscalibration stays invisible. Log entry captures: the action + input, its tier, the model's confidence + justification, the human's decision + reason, and the running session cost at that moment — plain structured logging, no new mechanism.
+
+## Still need to cover / do
+- Read Lessons.md Parts A/B ("human in the loop AI agent design", "AI agent safety patterns") — not yet read.
+- Run Lessons.md Part C's experiment: mixed-tier tool set, confirm never-ask never pauses, always-ask always pauses regardless of confidence, threshold-tier pauses only below its set threshold; test one deliberately-ambiguous case and one unambiguous case against a threshold-tier action; reject one always-ask action and confirm the rejection reason correctly feeds into the next prompt.
+- `example.js` for Day 4 deferred — no separate `HumanGate` example built yet; folding into a later combined example instead of one per day going forward.
+- Single Agent Architecture Day 5 — Week 5 Integration Project ("Autonomous Task Agent") — next up.

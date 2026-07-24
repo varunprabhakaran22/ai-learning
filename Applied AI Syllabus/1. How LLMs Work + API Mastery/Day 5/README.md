@@ -4,6 +4,8 @@ A terminal tool that combines everything from Day 1-4 into one working assistant
 stateless API calls, system prompts, auto-selected parameter presets, token counting,
 sliding-window history, and per-session cost estimation.
 
+**`example_production.py`** is the same assistant in Python, using the real official `anthropic` SDK — no framework yet (no LangGraph, no Pydantic), since none of Week 1's concepts need one. This is the first of one `example_production.py` per week; later weeks' production files each introduce one new package on top of this same starting point, only once that week's concept genuinely needs it.
+
 ## Architecture
 
 ```
